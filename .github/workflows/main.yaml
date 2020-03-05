@@ -7,6 +7,6 @@ jobs:
     steps:
     - name: Check PR is in project
       id: match
-      uses: js-egton/themis@v0.1
+      uses: js-egton/themis@v0.2
       with:
         match-regex: ^/Project [\d]{2}/
