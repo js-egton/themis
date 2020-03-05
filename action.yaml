@@ -1,0 +1,9 @@
+name: 'Themis'
+description: 'Define rules to prevent PRs from being merged'
+inputs:
+  match-regex:
+    description: 'The Regex string to match on'
+    required: true
+runs:
+  using: 'node12'
+  main: 'dist/ndex.js'
