@@ -8,7 +8,7 @@ A Github Action that allows users to define a rule that prevents Pull Requests f
 
 ## Usage
 
-Set up a workflow file referencing the Themis action.
+Set up a workflow file referencing the Themis action, giving it a suitable name.
 
 ### `.github/workflows/main.yml`
 
