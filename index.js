@@ -56,6 +56,9 @@ const getIssuesFromCards = async function(payload, projectCards) {
   issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length);
 
   for (let card of projectCards) {
+    console.log('card: ', card);
+    console.log('issueUrl: ', issueUrl);
+
     const match = card.indexOf(issueUrl)
 
     if (match !== -1) {
@@ -87,12 +90,16 @@ async function run() {
     // Then get the cards for all those valid projects
     const projectCards = await getCardIdsFromProjects(repoProjects);
 
+    console.log('projectCards: ', projectCards);
+
     if (projectCards.length < 1) {
       core.setFailed('No cards found for matching Projects: ' + repoProjects);
     }
 
     // Pull the issue IDs out of the cards
     const cardIssues = await getIssuesFromCards(github.context.payload, projectCards);
+
+    console.log('cardIssues: ', cardIssues);
 
     if (cardIssues.length < 1) {
       core.setFailed('No issues found in Project Cards: ' + projectCards);
