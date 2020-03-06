@@ -2,6 +2,28 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const { Octokit } = require("@octokit/action");
 
+async function getColumns() {
+  return await octokit.request("GET /projects/:project_id/columns", {
+    project_id: projectId,
+    headers: {
+      'accept': 'application/vnd.github.inertia-preview+json'
+    }
+  });
+}
+
+async function getCardIds() {
+  return await Promise.all(columnIds.map(
+    columnId => {
+      octokit.request("GET /projects/columns/:column_id/cards", {
+        column_id: columnId,
+        headers: {
+          'accept': 'application/vnd.github.inertia-preview+json'
+        }
+      });
+    }
+  ));
+}
+
 async function run() {
   // Get Octokit running
   const octokit = new Octokit();
@@ -34,25 +56,11 @@ async function run() {
 
     // Then get the cards for all those valid projects
     repoProjects.forEach(projectId => {
-      let columnsFromId = await octokit.request("GET /projects/:project_id/columns", {
-        project_id: projectId,
-        headers: {
-          'accept': 'application/vnd.github.inertia-preview+json'
-        }
-      });
+      let columnsFromId = getColumns();
 
       // Got all the columns for this project, now we need cards
       const columnIds = columnsFromId.data.map(project => project.id);
-      let cardsFromColumnId = await Promise.all(columnIds.map(
-        columnId => {
-          octokit.request("GET /projects/columns/:column_id/cards", {
-            column_id: columnId,
-            headers: {
-              'accept': 'application/vnd.github.inertia-preview+json'
-            }
-          });
-        }
-      ))
+      let cardsFromColumnId = getCardIds();
 
       // We have all the cards from all the columns, put them together
       let projectCards = [];
