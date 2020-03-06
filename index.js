@@ -51,6 +51,23 @@ const getCardIdsFromProjects = async function(repoProjects) {
   return cards.map(card => card.content_url)
 }
 
+const getIssuesFromCards = async function(payload, projectCards, issueUrl) {
+  let issues = [];
+
+  let issueUrl = payload.repository.issues_url;
+  issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length);
+
+  for (let card of projectCards) {
+    const match = card.indexOf(issueUrl)
+
+    if (match !== -1) {
+      issues.push(card.substring(match + issueUrl.length + 1))
+    }
+  }
+
+  return issues;
+}
+
 async function run() {
   try {
     // Get the Regex from the YAML
@@ -59,45 +76,32 @@ async function run() {
 
     // If it's not valid Regex, get outta here
     if (! projectMatchRegex) {
-      core.setFailed(regexString + ' is not valid Regex, exiting.')
-      return;
+      core.setFailed(regexString + ' is not valid Regex, exiting.');
     }
 
     // Go find projects for this repo that match our Regex
     const repoProjects = await getProjects(github.context.repo, projectMatchRegex);
 
     if (repoProjects.length < 1) {
-      core.setFailed('No projects found that matched given Regex: ' + projectMatchRegex)
+      core.setFailed('No projects found that matched given Regex: ' + projectMatchRegex);
     }
 
     // Then get the cards for all those valid projects
     const projectCards = await getCardIdsFromProjects(repoProjects);
 
     if (projectCards.length < 1) {
-      core.setFailed('No cards found for matching Projects: ' + repoProjects)
+      core.setFailed('No cards found for matching Projects: ' + repoProjects);
     }
 
-    console.log('projectMatchRegex: ', projectMatchRegex);
-    console.log('repoProjects: ', repoProjects);
-    console.log('projectCards: ', projectCards);
-
-    const payload = github.context.payload;
-
     // Pull the issue IDs out of the cards
-    let cardIssues = [];
-    let issueUrl = payload.repository.issues_url;
-    issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length)
+    const cardIssues = await getIssuesFromCards(github.context.payload, projectCards, issueUrl);
 
-    for (let card of projectCards) {
-      const match = card.indexOf(issueUrl)
-
-      if (match !== -1) {
-        cardIssues.push(card.substring(match + issueUrl.length + 1))
-      }
+    if (cardIssues.length < 1) {
+      core.setFailed('No issues found in Project Cards: ' + projectCards);
     }
 
     // Get the current PR number from the payload
-    const thisIssueNumber = payload.number;
+    const thisIssueNumber = github.context.payload.number;
 
     // If the PR issue is included in the big list of card IDs, we're good
     if (! cardIssues.includes(thisIssueNumber)) {
