@@ -54,7 +54,7 @@ async function run() {
 
     // Then get the cards for all those valid projects
     let projectCards = [];
-    repoProjects.forEach(projectId => {
+    repoProjects.forEach(async (projectId) => {
       let columnsFromId = await getColumns(projectId);
 
       // Got all the columns for this project, now we need cards
