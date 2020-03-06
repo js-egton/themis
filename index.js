@@ -7,11 +7,6 @@ try {
   let projectCards = [];
   let cardIssues = [];
 
-  // Set up some functions
-  const getProjectFromRepo = () => {
-    console.log('Repo: ', github.context.repo);
-  }
-
   // Get the Regex from the YAML
   const regexString = core.getInput('match-regex');
   const projectMatchRegex = new RegExp(regexString);
@@ -21,6 +16,8 @@ try {
     core.setFailed(regexString + ' is not valid Regex, exiting.')
     return;
   }
+
+  console.log('Repo: ', github.context.repo);
 
   // Grab the project name from the payload
   const payload = JSON.stringify(github.context.payload, undefined, 2);
