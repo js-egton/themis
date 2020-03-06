@@ -83,6 +83,7 @@ async function run() {
 
     if (repoProjects.length < 1) {
       core.setFailed('No projects found that matched given Regex: ' + projectMatchRegex);
+      return;
     }
 
     // Then get the cards for all those valid projects
@@ -90,6 +91,7 @@ async function run() {
 
     if (projectCards.length < 1) {
       core.setFailed('No cards found for matching Projects: ' + repoProjects);
+      return;
     }
 
     // Pull the issue IDs out of the cards
@@ -97,6 +99,7 @@ async function run() {
 
     if (cardIssues.length < 1) {
       core.setFailed('No issues found in Project Cards: ' + projectCards);
+      return;
     }
 
     // Get the current PR number from the payload

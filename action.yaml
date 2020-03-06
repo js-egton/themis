@@ -7,6 +7,9 @@ inputs:
   match-regex:
     description: 'The Regex string to match on'
     required: true
+  GITHUB_TOKEN:
+    description: 'The API token for this Action'
+    required: true
 runs:
   using: 'node12'
   main: 'index.js'
