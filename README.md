@@ -25,7 +25,7 @@ jobs:
     steps:
     - name: Check PR is in project
       id: match
-      uses: js-egton/themis@v1.0
+      uses: js-egton/themis@v1.2
       with:
         match-regex: ^Regex Here$
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
