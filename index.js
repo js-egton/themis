@@ -1,16 +1,17 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-let repoProjects = [];
-let projectCards = [];
-let cardIssues = [];
-
-// Set up some functions
-const getProjectFromRepo = async () => {
-  console.log('Repo: ', github.context.repo);
-}
-
 try {
+  // Set up some variables
+  let repoProjects = [];
+  let projectCards = [];
+  let cardIssues = [];
+
+  // Set up some functions
+  const getProjectFromRepo = async () => {
+    console.log('Repo: ', github.context.repo);
+  }
+
   // Get the Regex from the YAML
   const regexString = core.getInput('match-regex');
   const projectMatchRegex = new RegExp(regexString);
@@ -25,7 +26,7 @@ try {
   const payload = JSON.stringify(github.context.payload, undefined, 2);
   const payloadProject = payload;
 
-  getProjectFromRepo();
+  await getProjectFromRepo();
 
   console.log('Payload: ', payload);
 

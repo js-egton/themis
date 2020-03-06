@@ -4071,16 +4071,17 @@ function hasFirstPage (link) {
 const core = __webpack_require__(525);
 const github = __webpack_require__(351);
 
-let repoProjects = [];
-let projectCards = [];
-let cardIssues = [];
-
-// Set up some functions
-const getProjectFromRepo = async () => {
-  console.log('Repo: ', github.context.repo);
-}
-
 try {
+  // Set up some variables
+  let repoProjects = [];
+  let projectCards = [];
+  let cardIssues = [];
+
+  // Set up some functions
+  const getProjectFromRepo = async () => {
+    console.log('Repo: ', github.context.repo);
+  }
+
   // Get the Regex from the YAML
   const regexString = core.getInput('match-regex');
   const projectMatchRegex = new RegExp(regexString);
