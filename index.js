@@ -58,6 +58,7 @@ const getIssuesFromCards = async function(payload, projectCards) {
   issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length);
 
   for (let card of projectCards) {
+    console.log(card);
     const match = card.indexOf(issueUrl)
 
     if (match !== -1) {
