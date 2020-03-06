@@ -1,7 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const Octokit = require("@octokit/action");
-const octokit = new Octokit();
+const { Octokit } = require("@octokit/action");
 
 async function run() {
   // Set up some variables
@@ -10,6 +9,7 @@ async function run() {
   let cardIssues = [];
 
   // Get Octokit running
+  const octokit = new Octokit();
 
   try {
     // Get the Regex from the YAML
