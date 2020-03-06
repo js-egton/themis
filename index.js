@@ -55,11 +55,11 @@ async function run() {
     // Then get the cards for all those valid projects
     let projectCards = [];
     repoProjects.forEach(projectId => {
-      let columnsFromId = getColumns(projectId);
+      let columnsFromId = await getColumns(projectId);
 
       // Got all the columns for this project, now we need cards
       const columnIds = columnsFromId.data.map(project => project.id);
-      let cardsFromColumnId = getCardIds(columnIds);
+      let cardsFromColumnId = await getCardIds(columnIds);
 
       // We have all the cards from all the columns, put them together
       cardsFromColumnId.forEach(card => {
