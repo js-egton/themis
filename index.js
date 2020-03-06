@@ -77,6 +77,10 @@ async function run() {
       core.setFailed('No cards found for matching Projects: ' + repoProjects)
     }
 
+    console.log('projectMatchRegex: ', projectMatchRegex);
+    console.log('repoProjects: ', repoProjects);
+    console.log('projectCards: ', projectCards);
+
     const payload = github.context.payload;
 
     // Pull the issue IDs out of the cards
