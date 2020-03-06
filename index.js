@@ -59,6 +59,7 @@ const getIssuesFromCards = async function(payload, projectCards) {
 
   for (let card of projectCards) {
     console.log(card);
+    console.log(issueUrl);
     const match = card.indexOf(issueUrl)
 
     if (match !== -1) {
