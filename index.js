@@ -3,11 +3,6 @@ const github = require('@actions/github');
 const { Octokit } = require("@octokit/action");
 
 async function run() {
-  // Set up some variables
-  let repoProjects = [];
-  let projectCards = [];
-  let cardIssues = [];
-
   // Get Octokit running
   const octokit = new Octokit();
 
@@ -22,8 +17,8 @@ async function run() {
       return;
     }
 
+    // Go find projects for this repo
     const repoInfo = github.context.repo;
-
     const projectList = await octokit.request("GET /repos/:owner/:repo/projects", {
       owner: repoInfo.owner,
       repo: repoInfo.repo,
@@ -32,23 +27,64 @@ async function run() {
       }
     });
 
-    console.log('projectList: ', projectList);
+    // Filter them down by project names that match the Regex we were given
+    let repoProjects = projectList.data.filter(project => projectMatchRegex.test(project.name)).map(project => project.id);
 
-    // Grab the project name from the payload
-    const payload = JSON.stringify(github.context.payload, undefined, 2);
-    const payloadProject = payload;
+    console.log('repoProjects: ', repoProjects);
 
-    console.log('Payload: ', payload);
+    // Then get the cards for all those valid projects
+    repoProjects.forEach(projectId => {
+      let columnsFromId = await octokit.request("GET /projects/:project_id/columns", {
+        project_id: projectId,
+        headers: {
+          'accept': 'application/vnd.github.inertia-preview+json'
+        }
+      });
 
-    // Test the project name against the Regex we prepared earlier
-    if (projectMatchRegex.test(payloadProject)) {
+      // Got all the columns for this project, now we need cards
+      const columnIds = columnsFromId.data.map(project => project.id);
+      let cardsFromColumnId = await Promise.all(columnIds.map(
+        columnId => {
+          octokit.request("GET /projects/columns/:column_id/cards", {
+            column_id: columnId,
+            headers: {
+              'accept': 'application/vnd.github.inertia-preview+json'
+            }
+          });
+        }
+      ))
 
-    } else {
+      // We have all the cards from all the columns, put them together
+      let projectCards = [];
+      cardsFromColumnId.forEach(card => {
+        projectCards = projectCards.concat(card.data)
+      })
+    });
+
+    const payload = github.context.payload;
+
+    // Pull the issue IDs out of the cards
+    let issueUrl = payload.repository.issues_url;
+    issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length);
+
+    let cardIssues = [];
+    projectCards.forEach((card) => {
+      const match = card.indexOf(issueUrl)
+
+      if (match !== -1) {
+        cardIssues.push(card.substring(match + issueUrl.length + 1))
+      }
+    });
+
+    // Get the current PR number from the payload
+    const thisIssueNumber = payload.number;
+
+    // If the PR issue is included in the big list of card IDs, we're good
+    if (! cardIssues.includes(thisIssueNumber)) {
       core.setFailed('PR must be in a valid sprint project to be merged.')
-      return;
     }
   } catch (error) {
-  core.setFailed(error.message);
+    core.setFailed(error.message);
   }
 }
 
