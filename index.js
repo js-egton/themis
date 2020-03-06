@@ -1,11 +1,13 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
+const Octokit = require("@octokit/action");
 
 try {
   // Set up some variables
   let repoProjects = [];
   let projectCards = [];
   let cardIssues = [];
+  const octokit = new Octokit({ auth: github.token });
 
   // Get the Regex from the YAML
   const regexString = core.getInput('match-regex');
@@ -17,7 +19,14 @@ try {
     return;
   }
 
-  console.log('Context: ', github.context);
+  const repoInfo = github.repository;
+
+  const projectList = await octokit.request("GET /repos/:owner/:repo/projects", {
+    owner: repoInfo.owner,
+    repo: repoInfo.repo
+  });
+
+  console.log('projectList: ', projectList);
 
   // Grab the project name from the payload
   const payload = JSON.stringify(github.context.payload, undefined, 2);
