@@ -4075,6 +4075,11 @@ let repoProjects = [];
 let projectCards = [];
 let cardIssues = [];
 
+// Set up some functions
+const getProjectFromRepo = async () => {
+  console.log('Repo: ', github.context.repo);
+}
+
 try {
   // Get the Regex from the YAML
   const regexString = core.getInput('match-regex');
@@ -4103,10 +4108,6 @@ try {
   }
 } catch (error) {
   core.setFailed(error.message);
-}
-
-const getProjectFromRepo = async () => {
-  console.log('Repo: ', github.context.repo);
 }
 
 
