@@ -17,13 +17,11 @@ try {
     return;
   }
 
-  console.log('Repo: ', github.context.repo);
+  console.log('Context: ', github.context);
 
   // Grab the project name from the payload
   const payload = JSON.stringify(github.context.payload, undefined, 2);
   const payloadProject = payload;
-
-  getProjectFromRepo();
 
   console.log('Payload: ', payload);
 
