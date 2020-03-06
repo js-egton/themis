@@ -22,7 +22,7 @@ async function run() {
       return;
     }
 
-    const repoInfo = github.repository;
+    const repoInfo = github.context.repo;
 
     const projectList = await octokit.request("GET /repos/:owner/:repo/projects", {
       owner: repoInfo.owner,
