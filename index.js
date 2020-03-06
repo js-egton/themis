@@ -90,7 +90,7 @@ async function run() {
     const projectCards = await getCardIdsFromProjects(repoProjects);
 
     if (projectCards.length < 1) {
-      core.setFailed('No cards found for matching Projects: ' + repoProjects);
+      core.setFailed('No cards found for matching Projects: ' + (repoProjects || null));
       return;
     }
 
@@ -98,7 +98,7 @@ async function run() {
     const cardIssues = await getIssuesFromCards(github.context.payload, projectCards);
 
     if (cardIssues.length < 1) {
-      core.setFailed('No issues found in Project Cards: ' + projectCards);
+      core.setFailed('No issues found in Project Cards: ' + (projectCards || null));
       return;
     }
 
