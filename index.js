@@ -9,7 +9,7 @@ async function run() {
   let cardIssues = [];
 
   // Get Octokit running
-  const octokit = new Octokit({ auth: github.token });
+  const octokit = new Octokit();
 
   try {
 
