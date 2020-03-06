@@ -8,7 +8,7 @@ try {
   let cardIssues = [];
 
   // Set up some functions
-  const getProjectFromRepo = async () => {
+  getProjectFromRepo = async function() {
     console.log('Repo: ', github.context.repo);
   }
 
