@@ -51,7 +51,7 @@ const getCardIdsFromProjects = async function(repoProjects) {
   return cards.map(card => card.content_url)
 }
 
-const getIssuesFromCards = async function(payload, projectCards, issueUrl) {
+const getIssuesFromCards = async function(payload, projectCards) {
   let issues = [];
 
   let issueUrl = payload.repository.issues_url;
@@ -94,7 +94,7 @@ async function run() {
     }
 
     // Pull the issue IDs out of the cards
-    const cardIssues = await getIssuesFromCards(github.context.payload, projectCards, issueUrl);
+    const cardIssues = await getIssuesFromCards(github.context.payload, projectCards);
 
     if (cardIssues.length < 1) {
       core.setFailed('No issues found in Project Cards: ' + projectCards);
