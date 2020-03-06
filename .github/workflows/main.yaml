@@ -10,3 +10,4 @@ jobs:
       uses: js-egton/themis@v0.10
       with:
         match-regex: ^/Project [\d]{2}/
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
