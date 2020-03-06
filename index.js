@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const { Octokit } = require("@octokit/action");
 
-async function getColumns() {
+async function getColumns(projectId) {
   return await octokit.request("GET /projects/:project_id/columns", {
     project_id: projectId,
     headers: {
@@ -11,7 +11,7 @@ async function getColumns() {
   });
 }
 
-async function getCardIds() {
+async function getCardIds(columnIds) {
   return await Promise.all(columnIds.map(
     columnId => {
       octokit.request("GET /projects/columns/:column_id/cards", {
@@ -52,18 +52,16 @@ async function run() {
     // Filter them down by project names that match the Regex we were given
     let repoProjects = projectList.data.filter(project => projectMatchRegex.test(project.name)).map(project => project.id);
 
-    console.log('repoProjects: ', repoProjects);
-
     // Then get the cards for all those valid projects
+    let projectCards = [];
     repoProjects.forEach(projectId => {
-      let columnsFromId = getColumns();
+      let columnsFromId = getColumns(projectId);
 
       // Got all the columns for this project, now we need cards
       const columnIds = columnsFromId.data.map(project => project.id);
-      let cardsFromColumnId = getCardIds();
+      let cardsFromColumnId = getCardIds(columnIds);
 
       // We have all the cards from all the columns, put them together
-      let projectCards = [];
       cardsFromColumnId.forEach(card => {
         projectCards = projectCards.concat(card.data)
       })
