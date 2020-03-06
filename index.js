@@ -8,7 +8,7 @@ try {
   let cardIssues = [];
 
   // Set up some functions
-  getProjectFromRepo = async function() {
+  const getProjectFromRepo = () => {
     console.log('Repo: ', github.context.repo);
   }
 
@@ -26,7 +26,7 @@ try {
   const payload = JSON.stringify(github.context.payload, undefined, 2);
   const payloadProject = payload;
 
-  await getProjectFromRepo();
+  getProjectFromRepo();
 
   console.log('Payload: ', payload);
 
