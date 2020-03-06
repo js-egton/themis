@@ -27,7 +27,9 @@ async function run() {
     const projectList = await octokit.request("GET /repos/:owner/:repo/projects", {
       owner: repoInfo.owner,
       repo: repoInfo.repo,
-      mediaType: 'application/vnd.github.inertia-preview+json'
+      headers: {
+        'accept': 'application/vnd.github.inertia-preview+json'
+      }
     });
 
     console.log('projectList: ', projectList);
