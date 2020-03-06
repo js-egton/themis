@@ -1,6 +1,10 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
+let repoProjects = [];
+let projectCards = [];
+let cardIssues = [];
+
 try {
   // Get the Regex from the YAML
   const regexString = core.getInput('match-regex');
@@ -16,6 +20,8 @@ try {
   const payload = JSON.stringify(github.context.payload, undefined, 2);
   const payloadProject = payload;
 
+  getProjectFromRepo();
+
   console.log('Payload: ', payload);
 
   // Test the project name against the Regex we prepared earlier
@@ -27,4 +33,8 @@ try {
   }
 } catch (error) {
   core.setFailed(error.message);
+}
+
+const getProjectFromRepo = async () => {
+  console.log('Repo: ', github.context.repo);
 }

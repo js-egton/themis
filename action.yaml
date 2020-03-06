@@ -1,5 +1,8 @@
 name: 'Themis'
 description: 'Define rules to prevent PRs from being merged'
+branding:
+  icon: 'moon'
+  color: 'purple'
 inputs:
   match-regex:
     description: 'The Regex string to match on'
