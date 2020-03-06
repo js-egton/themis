@@ -69,6 +69,10 @@ async function run() {
     // Then get the cards for all those valid projects
     const projectCards = await getCardIdsFromProjects(repoProjects);
 
+    console.log('projectMatchRegex: ', projectMatchRegex);
+    console.log('repoProjects: ', repoProjects);
+    console.log('projectCards: ', projectCards);
+
     const payload = github.context.payload;
 
     // Pull the issue IDs out of the cards
