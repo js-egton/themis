@@ -44,8 +44,6 @@ const getCardIdsFromProjects = async function(repoProjects) {
     res.forEach(card => {
       cards = cards.concat(card.data)
     })
-
-    return cards;
   }
 
   return cards.map(card => card.content_url)
@@ -58,8 +56,6 @@ const getIssuesFromCards = async function(payload, projectCards) {
   issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length);
 
   for (let card of projectCards) {
-    console.log(card);
-    console.log(issueUrl);
     const match = card.indexOf(issueUrl)
 
     if (match !== -1) {
