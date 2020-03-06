@@ -66,12 +66,16 @@ async function run() {
     // Go find projects for this repo that match our Regex
     const repoProjects = await getProjects(github.context.repo, projectMatchRegex);
 
+    if (repoProjects.length < 1) {
+      core.setFailed('No projects found that matched given Regex: ' + projectMatchRegex)
+    }
+
     // Then get the cards for all those valid projects
     const projectCards = await getCardIdsFromProjects(repoProjects);
 
-    console.log('projectMatchRegex: ', projectMatchRegex);
-    console.log('repoProjects: ', repoProjects);
-    console.log('projectCards: ', projectCards);
+    if (projectCards.length < 1) {
+      core.setFailed('No cards found for matching Projects: ' + repoProjects)
+    }
 
     const payload = github.context.payload;
 
