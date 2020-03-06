@@ -56,9 +56,6 @@ const getIssuesFromCards = async function(payload, projectCards) {
   issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length);
 
   for (let card of projectCards) {
-    console.log('card: ', card);
-    console.log('issueUrl: ', issueUrl);
-
     const match = card.indexOf(issueUrl)
 
     if (match !== -1) {
@@ -90,8 +87,6 @@ async function run() {
     // Then get the cards for all those valid projects
     const projectCards = await getCardIdsFromProjects(repoProjects);
 
-    console.log('projectCards: ', projectCards);
-
     if (projectCards.length < 1) {
       core.setFailed('No cards found for matching Projects: ' + repoProjects);
     }
@@ -107,6 +102,8 @@ async function run() {
 
     // Get the current PR number from the payload
     const thisIssueNumber = github.context.payload.number;
+
+    console.log('thisIssueNumber: ', thisIssueNumber);
 
     // If the PR issue is included in the big list of card IDs, we're good
     if (! cardIssues.includes(thisIssueNumber)) {
