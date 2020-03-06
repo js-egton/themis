@@ -83,20 +83,23 @@ async function run() {
 
     if (repoProjects.length < 1) {
       core.setFailed('No projects found that matched given Regex: ' + projectMatchRegex);
+      return;
     }
 
     // Then get the cards for all those valid projects
     const projectCards = await getCardIdsFromProjects(repoProjects);
 
     if (projectCards.length < 1) {
-      core.setFailed('No cards found for matching Projects: ' + repoProjects);
+      core.setFailed('No cards found for matching Projects: ' + (repoProjects || null));
+      return;
     }
 
     // Pull the issue IDs out of the cards
     const cardIssues = await getIssuesFromCards(github.context.payload, projectCards);
 
     if (cardIssues.length < 1) {
-      core.setFailed('No issues found in Project Cards: ' + projectCards);
+      core.setFailed('No issues found in Project Cards: ' + (projectCards || null));
+      return;
     }
 
     // Get the current PR number from the payload
