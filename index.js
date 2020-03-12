@@ -118,9 +118,10 @@ const checkLabelRegex = async function(regex) {
 
   console.log('payload: ', github.context.payload);
   const prLabels = github.context.payload.labels;
+  console.log('labels: ', prLabels);
 
   // If there's no labels, let this check go clean
-  if (prLabels.length > 0) {
+  if (prLabels) {
     prLabels.forEach((label) => {
       if (labelMatchRegex.test(label.name)) {
         // Label matches given Regex, quit out
