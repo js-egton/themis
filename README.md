@@ -38,6 +38,10 @@ Version 2 adds a third `with` parameter, and renames `match-regex` as follows:
 * `project-regex` is the Regex string you want to use for **valid** projects. The check will fail if the PR is not in a valid project.
 * `label-regex` is the Regex string you want to use for **invalid** labels. The check will fail if the PR contains a label that matches the Regex.
 
+There is also a debugging flag, allowing you to see console output in the job:
+
+* `debug-mode`, defaults to FALSE.
+
 ### `.github/workflows/main.yml`
 
 ```
@@ -54,5 +58,6 @@ jobs:
       with:
         project-regex: ^Regex Here$
         label-regex: ^Regex Here$
+        debug-mode: true
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

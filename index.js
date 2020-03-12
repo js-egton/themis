@@ -77,7 +77,7 @@ const getIssuesFromCards = async function(payload, projectCards) {
   return issues;
 }
 
-const checkProjectRegex = async function(regex) {
+const checkProjectRegex = async function(regex, debugMode) {
   const projectMatchRegex = new RegExp(regex);
 
   // If it's not valid Regex, get outta here
@@ -88,6 +88,10 @@ const checkProjectRegex = async function(regex) {
   // Go find projects for this repo that match our Regex
   const repoProjects = await getProjects(github.context.repo, projectMatchRegex);
 
+  if (debugMode) {
+    console.log('Projects matching Regex of ' + regex + ' :', (repoProjects | 'none'));
+  }
+
   if (repoProjects.length < 1) {
     core.setFailed('No projects found that matched given Regex: ' + projectMatchRegex);
     return;
@@ -96,6 +100,10 @@ const checkProjectRegex = async function(regex) {
   // Then get the cards for all those valid projects
   const projectCards = await getCardIdsFromProjects(repoProjects);
 
+  if (debugMode) {
+    console.log('Cards found in ' + repoProjects.lengthh + ' valid project(s):', (projectCards | 'none'));
+  }
+
   if (projectCards.length < 1) {
     core.setFailed('No cards found for matching Projects: ' + (repoProjects || null));
     return;
@@ -103,6 +111,10 @@ const checkProjectRegex = async function(regex) {
 
   // Pull the issue IDs out of the cards
   const cardIssues = await getIssuesFromCards(github.context.payload, projectCards);
+
+  if (debugMode) {
+    console.log('Issues found in ' + cardIssues.length + ' valid project card(s):', (cardIssues | 'none'));
+  }
 
   if (cardIssues.length < 1) {
     core.setFailed('No issues found in Project Cards: ' + (projectCards || null));
@@ -118,7 +130,7 @@ const checkProjectRegex = async function(regex) {
   }
 }
 
-const checkLabelRegex = async function(regex) {
+const checkLabelRegex = async function(regex, debugMode) {
   const labelMatchRegex = new RegExp(regex);
 
   // If it's not valid Regex, get outta here
@@ -128,9 +140,17 @@ const checkLabelRegex = async function(regex) {
 
   const prLabels = await getLabelsOnIssue(github.context.repo, github.context.payload.number);
 
+  if (debugMode) {
+    console.log('Labels found on PR #' + github.context.payload.number + ': ', (prLabels | 'none'));
+  }
+
   // If there's no labels, let this check go clean
   if (prLabels.length > 0) {
     prLabels.forEach((label) => {
+      if (debugMode) {
+        console.log('Testing label ' + label.name + ' against Regex of ' + regex);
+      }
+
       if (labelMatchRegex.test(label.name)) {
         // Label matches given Regex, quit out
         core.setFailed('PR has ' + label.name + ' label attached, so it cannot be merged.')
@@ -144,13 +164,14 @@ async function run() {
     // Get the Regex from the YAML
     const projectRegex = core.getInput('project-regex');
     const labelRegex = core.getInput('label-regex');
+    const debugMode = core.getInput('debug-mode');
 
     if (projectRegex) {
-      checkProjectRegex(projectRegex);
+      checkProjectRegex(projectRegex, debugMode);
     }
 
     if (labelRegex) {
-      checkLabelRegex(labelRegex);
+      checkLabelRegex(labelRegex, debugMode);
     }
   } catch (error) {
     core.setFailed(error.message);
