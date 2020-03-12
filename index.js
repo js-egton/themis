@@ -166,12 +166,18 @@ async function run() {
     const labelRegex = core.getInput('label-regex');
     const debugMode = core.getInput('debug-mode');
 
+    let debugModeFlag = false;
+
+    if (debugMode && debugMode === 'true') {
+      debugModeFlag = true;
+    }
+
     if (projectRegex) {
-      checkProjectRegex(projectRegex, debugMode);
+      checkProjectRegex(projectRegex, debugModeFlag);
     }
 
     if (labelRegex) {
-      checkLabelRegex(labelRegex, debugMode);
+      checkLabelRegex(labelRegex, debugModeFlag);
     }
   } catch (error) {
     core.setFailed(error.message);
