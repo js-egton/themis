@@ -9,7 +9,7 @@ jobs:
     steps:
     - name: Check PR matches merge criteria
       id: match
-      uses: js-egton/themis@v2.8
+      uses: js-egton/themis@v2.9
       with:
         project-regex: ^Project [\d]{2}$
         label-regex: ^breaking-change$
