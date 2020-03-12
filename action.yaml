@@ -10,6 +10,10 @@ inputs:
   label-regex:
     description: 'Will reject PRs that match the given label'
     required: false
+  debug-mode:
+      description: 'Whether to enable console output'
+      required: false
+      default: false
   GITHUB_TOKEN:
     description: 'The API token for this Action'
     required: true
