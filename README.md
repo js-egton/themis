@@ -30,3 +30,29 @@ jobs:
         match-regex: ^Regex Here$
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+## v2 Usage
+
+Version 2 adds a third `with` parameter, and renames `match-regex` as follows:
+
+* `project-regex` is the Regex string you want to use for **valid** projects.
+* `label-regex` is the Regex string you want to use for **invalid** labels. The check will fail if the PR contains a label that matches the Regex.
+
+### `.github/workflows/main.yml`
+
+```
+on: [pull_request]
+
+jobs:
+  pr_match_job:
+    runs-on: ubuntu-latest
+    name: Merge Check
+    steps:
+    - name: Check PR matches merge criteria
+      id: match
+      uses: js-egton/themis@v2.0
+      with:
+        project-regex: ^Regex Here$
+        label-regex: ^Regex Here$
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
