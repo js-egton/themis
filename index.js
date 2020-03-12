@@ -10,7 +10,7 @@ const getLabelsOnIssue = async function(repoInfo, issueNumber) {
     issue_number: issueNumber
   });
 
-  return labelsList;
+  return labelsList.data.map(label => label.name);
 }
 
 const getProjects = async function(repoInfo, projectMatchRegex) {
@@ -148,12 +148,12 @@ const checkLabelRegex = async function(regex, debugMode) {
   if (prLabels.length > 0) {
     prLabels.forEach((label) => {
       if (debugMode) {
-        console.log('Testing label ' + label.name + ' against Regex of ' + regex);
+        console.log('Testing label ' + label + ' against Regex of ' + regex);
       }
 
-      if (labelMatchRegex.test(label.name)) {
+      if (labelMatchRegex.test(label)) {
         // Label matches given Regex, quit out
-        core.setFailed('PR has ' + label.name + ' label attached, so it cannot be merged.')
+        core.setFailed('PR has ' + label + ' label attached, so it cannot be merged.')
       }
     });
   }
