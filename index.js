@@ -3,6 +3,16 @@ const github = require('@actions/github');
 const { Octokit } = require("@octokit/action");
 const octokit = new Octokit();
 
+const getLabelsOnIssue = async function(repoInfo, issueNumber) {
+  const labelsList = await octokit.request("GET /repos/:owner/:repo/issues/:issue_number/labels", {
+    owner: repoInfo.owner,
+    repo: repoInfo.repo,
+    issue_number: issueNumber
+  });
+
+  return labelsList;
+}
+
 const getProjects = async function(repoInfo, projectMatchRegex) {
   const projectList = await octokit.request("GET /repos/:owner/:repo/projects", {
     owner: repoInfo.owner,
@@ -116,7 +126,7 @@ const checkLabelRegex = async function(regex) {
     core.setFailed(regexString + ' is not valid Regex, exiting.');
   }
 
-  const prLabels = github.context.payload.pull_request.labels;
+  const prLabels = await getLabelsOnIssue(github.context.repo, github.context.payload.number);
 
   // If there's no labels, let this check go clean
   if (prLabels.length > 0) {
