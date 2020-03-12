@@ -116,6 +116,7 @@ const checkLabelRegex = async function(regex) {
     core.setFailed(regexString + ' is not valid Regex, exiting.');
   }
 
+  console.log('payload: ', github.context.payload);
   const prLabels = github.context.payload.labels;
 
   // If there's no labels, let this check go clean

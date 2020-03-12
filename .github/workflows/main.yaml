@@ -7,8 +7,8 @@ jobs:
     steps:
     - name: Check PR matches merge criteria
       id: match
-      uses: js-egton/themis@v2.0
+      uses: js-egton/themis@v2.1
       with:
-        project-regex: ^Project [\d]{2}$
+        # project-regex: ^Project [\d]{2}$
         label-regex: ^breaking-change$
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
