@@ -1,5 +1,7 @@
 on: [pull_request]
 
+name: Main
+
 jobs:
   pr_match_job:
     runs-on: ubuntu-latest
@@ -9,6 +11,6 @@ jobs:
       id: match
       uses: js-egton/themis@v2.4
       with:
-        # project-regex: ^Project [\d]{2}$
+        project-regex: ^Project [\d]{2}$
         label-regex: ^breaking-change$
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
