@@ -1,6 +1,6 @@
 on: [pull_request]
 
-name: Main
+name: Main Workflow
 
 jobs:
   pr_match_job:
