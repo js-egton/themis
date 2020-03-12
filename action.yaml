@@ -4,9 +4,12 @@ branding:
   icon: 'moon'
   color: 'purple'
 inputs:
-  match-regex:
-    description: 'The Regex string to match on'
-    required: true
+  project-regex:
+    description: 'Will only allow PRs that match the given project'
+    required: false
+  label-regex:
+    description: 'Will reject PRs that match the given label'
+    required: false
   GITHUB_TOKEN:
     description: 'The API token for this Action'
     required: true
