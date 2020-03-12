@@ -89,7 +89,7 @@ const checkProjectRegex = async function(regex, debugMode) {
   const repoProjects = await getProjects(github.context.repo, projectMatchRegex);
 
   if (debugMode) {
-    console.log('List of projects matching Regex of ' + regex + ':', (repoProjects | 'none'));
+    console.log('List of projects matching Regex of ' + regex + ':', (repoProjects || 'none'));
   }
 
   if (repoProjects.length < 1) {
@@ -101,7 +101,7 @@ const checkProjectRegex = async function(regex, debugMode) {
   const projectCards = await getCardIdsFromProjects(repoProjects);
 
   if (debugMode) {
-    console.log('List of cards found in ' + repoProjects.length + ' valid project(s):', (projectCards | 'none'));
+    console.log('List of cards found in ' + repoProjects.length + ' valid project(s):', (projectCards || 'none'));
   }
 
   if (projectCards.length < 1) {
@@ -113,7 +113,7 @@ const checkProjectRegex = async function(regex, debugMode) {
   const cardIssues = await getIssuesFromCards(github.context.payload, projectCards);
 
   if (debugMode) {
-    console.log('List of issues found in ' + cardIssues.length + ' valid project card(s):', (cardIssues | 'none'));
+    console.log('List of issues found in ' + cardIssues.length + ' valid project card(s):', (cardIssues || 'none'));
   }
 
   if (cardIssues.length < 1) {
@@ -141,7 +141,7 @@ const checkLabelRegex = async function(regex, debugMode) {
   const prLabels = await getLabelsOnIssue(github.context.repo, github.context.payload.number);
 
   if (debugMode) {
-    console.log('List of labels found on PR #' + github.context.payload.number + ':', (prLabels | 'none'));
+    console.log('List of labels found on PR #' + github.context.payload.number + ':', (prLabels || 'none'));
   }
 
   // If there's no labels, let this check go clean
