@@ -84,6 +84,8 @@ const getFilesOnCommit = async function(repoInfo, commitSha) {
     ref: commitSha
   });
 
+  console.log(commitDetails);
+
   return commitDetails.files.map(file => file.filename);
 }
 
@@ -175,6 +177,10 @@ const checkForChangelog = async function(debugMode) {
   }
 
   const changedFiles = await getFilesOnCommit(github.context.repo, github.context.sha);
+
+  if (debugMode) {
+    console.log('List of changed files on SHA ' + github.context.sha + ': ' + changedFiles);
+  }
 
   if(! changedFiles.includes('CHANGELOG.md')) {
     // CHANGELOG.md has not been changed, quit out
