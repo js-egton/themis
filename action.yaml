@@ -10,8 +10,8 @@ inputs:
   label-regex:
     description: 'Will reject PRs that match the given label'
     required: false
-  changelog-watch:
-      description: 'Will reject PRs that are missing CHANGELOG updates'
+  changelog-regex:
+      description: 'Will reject PRs that are missing updates to the given files'
       required: false
   debug-mode:
       description: 'Whether to enable console output'
