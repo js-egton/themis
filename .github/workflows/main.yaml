@@ -9,7 +9,7 @@ jobs:
     steps:
     - name: Check PR has updated CHANGELOG
       id: match
-      uses: js-egton/themis@v3.1
+      uses: js-egton/themis@v3.2
       with:
         changelog-watch: true
         debug-mode: true
@@ -20,7 +20,7 @@ jobs:
     steps:
     - name: Check PR is in project
       id: match
-      uses: js-egton/themis@v3.1
+      uses: js-egton/themis@v3.2
       with:
         project-regex: ^Project [\d]{2}$
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -30,7 +30,7 @@ jobs:
     steps:
     - name: Check PR doesn't have invalid label
       id: match
-      uses: js-egton/themis@v3.1
+      uses: js-egton/themis@v3.2
       with:
         label-regex: ^breaking-change$
         debug-mode: true
