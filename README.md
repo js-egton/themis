@@ -4,7 +4,6 @@
 
 A Github Action that allows users to define a rule that prevents Pull Requests from being merged based on various factors.
 
-
 ## v3 Usage
 
 Version 3 adds a new `changelog-regex` parameter:
