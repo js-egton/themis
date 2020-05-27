@@ -22,11 +22,11 @@ jobs:
     steps:
     - name: Check PR matches merge criteria
       id: match
-      uses: js-egton/themis@v3.8
+      uses: js-egton/themis@v3.9
       with:
         project-regex: ^Regex Here$
         label-regex: ^Regex Here$
-        changelog-regex: ^Regex Here$
+        changelog-regex: changelogs/
         debug-mode: true
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
