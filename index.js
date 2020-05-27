@@ -84,9 +84,9 @@ const getFilesOnCommit = async function(repoInfo, commitSha) {
     ref: commitSha
   });
 
-  console.log(commitDetails);
-
-  return commitDetails.files.map(file => file.filename);
+  if (commitDetails) {
+    return commitDetails.data.files.map(file => file.filename);
+  }
 }
 
 const checkProjectRegex = async function(regex, debugMode) {
