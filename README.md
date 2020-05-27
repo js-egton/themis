@@ -7,9 +7,9 @@ A Github Action that allows users to define a rule that prevents Pull Requests f
 
 ## v3 Usage
 
-Version 3 adds a new `changelog-watch` parameter:
+Version 3 adds a new `changelog-regex` parameter:
 
-* `changelog-watch` must be set to `true` in order to run, and it will fail a PR if a CHANGLOG.md file is not present in the list of modified files.
+* `changelog-regex` is the Regex string you want to use when searching for changelog files. It can be a filename (`CHANGELOG.md`) or a folder (`changelogs/`).
 
 ### `.github/workflows/main.yml`
 
@@ -27,8 +27,8 @@ jobs:
       with:
         project-regex: ^Regex Here$
         label-regex: ^Regex Here$
+        changelog-regex: ^Regex Here$
         debug-mode: true
-        changelog-watch: true
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
