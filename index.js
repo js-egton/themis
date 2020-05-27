@@ -171,9 +171,9 @@ const checkLabelRegex = async function(regex, debugMode) {
   }
 }
 
-const checkForChangelog = async function(debugMode) {
+const checkForChangelog = async function(changelogRegex, debugMode) {
   if (debugMode) {
-    console.log('Checking for CHANGELOG.md change on SHA ' + github.context.sha);
+    console.log('Checking for ' + changelogRegex + ' file changes on SHA ' + github.context.sha);
   }
 
   const changedFiles = await getFilesOnCommit(github.context.repo, github.context.sha);
@@ -182,9 +182,19 @@ const checkForChangelog = async function(debugMode) {
     console.log('List of changed files on SHA ' + github.context.sha + ': ' + changedFiles);
   }
 
-  if(! changedFiles.includes('CHANGELOG.md')) {
+  let changelogUpdated = false;
+
+  for (let file of changedFiles) {
+    if (changelogRegex.test(file)) {
+      // We got a match! Change the flag, quit out
+      changelogUpdated = true;
+      break;
+    }
+  }
+
+  if(! changelogUpdated) {
     // CHANGELOG.md has not been changed, quit out
-    core.setFailed('CHANGLOG.md has not been updated on SHA ' + github.context.sha + ', so this PR cannot be merged.')
+    core.setFailed('Changelogs have not been updated on SHA ' + github.context.sha + ', so this PR cannot be merged.')
   }
 }
 
@@ -194,7 +204,7 @@ async function run() {
     const projectRegex = core.getInput('project-regex');
     const labelRegex = core.getInput('label-regex');
     const debugMode = core.getInput('debug-mode');
-    const changelogWatch = core.getInput('changelog-watch');
+    const changelogRegex = core.getInput('changelog-regex');
 
     let debugModeFlag = false;
 
@@ -202,8 +212,8 @@ async function run() {
       debugModeFlag = true;
     }
 
-    if (changelogWatch && changelogWatch === 'true') {
-      checkForChangelog(debugModeFlag);
+    if (changelogRegex) {
+      checkForChangelog(changelogRegex, debugModeFlag);
     }
 
     if (projectRegex) {
