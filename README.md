@@ -22,7 +22,7 @@ jobs:
     steps:
     - name: Check PR matches merge criteria
       id: match
-      uses: js-egton/themis@v3.7
+      uses: js-egton/themis@v3.8
       with:
         project-regex: ^Regex Here$
         label-regex: ^Regex Here$
