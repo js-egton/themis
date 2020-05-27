@@ -183,9 +183,10 @@ const checkForChangelog = async function(changelogRegex, debugMode) {
   }
 
   let changelogUpdated = false;
+  const changelogRegexTester = new RegExp(changelogRegex);
 
   for (let file of changedFiles) {
-    if (changelogRegex.test(file)) {
+    if (changelogRegexTester.test(file)) {
       // We got a match! Change the flag, quit out
       changelogUpdated = true;
       break;
