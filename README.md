@@ -4,14 +4,12 @@
 
 A Github Action that allows users to define a rule that prevents Pull Requests from being merged based on various factors.
 
-## Usage
 
-Set up a workflow file referencing the Themis action repo, giving it a suitable name.
+## v3 Usage
 
-You need two `with` parameters:
+Version 3 adds a new `changelog-watch` parameter:
 
-* `match-regex` is the Regex string you want to use for valid projects. For example, `^Project [\d]{2}$` will match 'Project 01' and 'Project 02' but not 'Project 3'. (You don't need the leading and trailing slash on the Regex string, just the tokens inside. I advise you use `^` and `$` string markers for best results.)
-* `GITHUB_TOKEN` is what the action uses to authenticate against the Github API. It's automatically put into the `secrets` variable, so you just need to include the parameter **exactly as shown below**.
+* `changelog-watch` must be set to `true` in order to run, and it will fail a PR if a CHANGLOG.md file is not present in the list of modified files.
 
 ### `.github/workflows/main.yml`
 
@@ -21,13 +19,16 @@ on: [pull_request]
 jobs:
   pr_match_job:
     runs-on: ubuntu-latest
-    name: Project Check
+    name: Merge Check
     steps:
-    - name: Check PR is in project
+    - name: Check PR matches merge criteria
       id: match
-      uses: js-egton/themis@v1.2
+      uses: js-egton/themis@v3.0
       with:
-        match-regex: ^Regex Here$
+        project-regex: ^Regex Here$
+        label-regex: ^Regex Here$
+        debug-mode: true
+        changelog-watch: true
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
@@ -54,10 +55,37 @@ jobs:
     steps:
     - name: Check PR matches merge criteria
       id: match
-      uses: js-egton/themis@v2.6
+      uses: js-egton/themis@v2.12
       with:
         project-regex: ^Regex Here$
         label-regex: ^Regex Here$
         debug-mode: true
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+## Usage
+
+Set up a workflow file referencing the Themis action repo, giving it a suitable name.
+
+You need two `with` parameters:
+
+* `match-regex` is the Regex string you want to use for valid projects. For example, `^Project [\d]{2}$` will match 'Project 01' and 'Project 02' but not 'Project 3'. (You don't need the leading and trailing slash on the Regex string, just the tokens inside. I advise you use `^` and `$` string markers for best results.)
+* `GITHUB_TOKEN` is what the action uses to authenticate against the Github API. It's automatically put into the `secrets` variable, so you just need to include the parameter **exactly as shown below**.
+
+### `.github/workflows/main.yml`
+
+```
+on: [pull_request]
+
+jobs:
+  pr_match_job:
+    runs-on: ubuntu-latest
+    name: Project Check
+    steps:
+    - name: Check PR is in project
+      id: match
+      uses: js-egton/themis@v1.2
+      with:
+        match-regex: ^Regex Here$
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

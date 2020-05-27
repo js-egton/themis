@@ -77,6 +77,16 @@ const getIssuesFromCards = async function(payload, projectCards) {
   return issues;
 }
 
+const getFilesOnCommit = async function(repoInfo, commitSha) {
+  const commitDetails = await octokit.request("GET /repos/:owner/:repo/commits/:ref", {
+    owner: repoInfo.owner,
+    repo: repoInfo.repo,
+    ref: commitSha
+  });
+
+  return commitDetails.files.map(file => file.filename);
+}
+
 const checkProjectRegex = async function(regex, debugMode) {
   const projectMatchRegex = new RegExp(regex);
 
@@ -159,17 +169,35 @@ const checkLabelRegex = async function(regex, debugMode) {
   }
 }
 
+const checkForChangelog = async function(debugMode) {
+  if (debugMode) {
+    console.log('Checking for CHANGELOG.md change on SHA ' + github.context.sha);
+  }
+
+  const changedFiles = await getFilesOnCommit(github.context.repo, github.context.sha);
+
+  if(! changedFiles.includes('CHANGELOG.md')) {
+    // CHANGELOG.md has not been changed, quit out
+    core.setFailed('CHANGLOG.md has not been updated on SHA ' + github.context.sha + ', so this PR cannot be merged.')
+  }
+}
+
 async function run() {
   try {
     // Get the Regex from the YAML
     const projectRegex = core.getInput('project-regex');
     const labelRegex = core.getInput('label-regex');
     const debugMode = core.getInput('debug-mode');
+    const changelogWatch = core.getInput('changelog-watch');
 
     let debugModeFlag = false;
 
     if (debugMode && debugMode === 'true') {
       debugModeFlag = true;
+    }
+
+    if (changelogWatch && changelogWatch === 'true') {
+      checkForChangelog(debugModeFlag);
     }
 
     if (projectRegex) {
