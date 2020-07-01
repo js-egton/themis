@@ -195,6 +195,9 @@ const checkForChangelog = async function(changelogRegex, debugMode) {
     }
 
     if (changelogRegexTester.test(file)) {
+      if (debugMode) {
+        console.log('Match found!');
+      }
       // We got a match! Change the flag, quit out
       changelogUpdated = true;
       break;
