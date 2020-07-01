@@ -66,11 +66,13 @@ const getIssuesFromCards = async function(payload, projectCards) {
   issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length);
 
   for (let card of projectCards) {
-    const match = card.indexOf(issueUrl)
+    if (card) {
+      const match = card.indexOf(issueUrl)
 
-    if (match !== -1) {
-      // Need to turn this into an integer because the PR payload uses int
-      issues.push(parseInt(card.substring(match + issueUrl.length + 1)))
+      if (match !== -1) {
+        // Need to turn this into an integer because the PR payload uses int
+        issues.push(parseInt(card.substring(match + issueUrl.length + 1)))
+      }
     }
   }
 
@@ -183,9 +185,17 @@ const checkForChangelog = async function(changelogRegex, debugMode) {
   }
 
   let changelogUpdated = false;
+  const changelogRegexTester = new RegExp(changelogRegex);
 
   for (let file of changedFiles) {
-    if (changelogRegex.test(file)) {
+    if (debugMode) {
+      console.log('Testing filename ' + file + ' against Regex of ' + changelogRegex);
+    }
+
+    if (changelogRegexTester.test(file)) {
+      if (debugMode) {
+        console.log('Match found!');
+      }
       // We got a match! Change the flag, quit out
       changelogUpdated = true;
       break;

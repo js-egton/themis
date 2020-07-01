@@ -4,7 +4,6 @@
 
 A Github Action that allows users to define a rule that prevents Pull Requests from being merged based on various factors.
 
-
 ## v3 Usage
 
 Version 3 adds a new `changelog-regex` parameter:
@@ -23,11 +22,11 @@ jobs:
     steps:
     - name: Check PR matches merge criteria
       id: match
-      uses: js-egton/themis@v3.0
+      uses: js-egton/themis@v3.13
       with:
         project-regex: ^Regex Here$
         label-regex: ^Regex Here$
-        changelog-regex: ^Regex Here$
+        changelog-regex: changelogs/
         debug-mode: true
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
