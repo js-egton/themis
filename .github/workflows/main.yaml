@@ -22,7 +22,8 @@ jobs:
       id: match
       uses: js-egton/themis@v3.9
       with:
-        project-regex: ^Project [\d]{2}$
+        project-regex: ^In flight$
+        debug-mode: true
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   label_match_job:
     runs-on: ubuntu-latest

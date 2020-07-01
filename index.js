@@ -65,12 +65,16 @@ const getIssuesFromCards = async function(payload, projectCards) {
   let issueUrl = payload.repository.issues_url;
   issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length);
 
-  for (let card of projectCards) {
-    const match = card.indexOf(issueUrl)
+  console.log(projectCards);
 
-    if (match !== -1) {
-      // Need to turn this into an integer because the PR payload uses int
-      issues.push(parseInt(card.substring(match + issueUrl.length + 1)))
+  for (let card of projectCards) {
+    if (card) {
+      const match = card.indexOf(issueUrl)
+
+      if (match !== -1) {
+        // Need to turn this into an integer because the PR payload uses int
+        issues.push(parseInt(card.substring(match + issueUrl.length + 1)))
+      }
     }
   }
 
