@@ -20,7 +20,7 @@ jobs:
     steps:
     - name: Check PR is in project
       id: match
-      uses: js-egton/themis@v3.12
+      uses: js-egton/themis@v3.13
       with:
         project-regex: ^In flight$
         debug-mode: true
