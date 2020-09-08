@@ -9,30 +9,33 @@ jobs:
     steps:
     - name: Check PR has updated CHANGELOG
       id: match
-      uses: js-egton/themis@v3.9
-      with:
-        changelog-regex: CHANGELOG
-        debug-mode: true
+      uses: js-egton/themis@v3.15
+      env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        CHANGELOG_REGEX: CHANGELOG
+        DEBUG_MODE: true
   pr_match_job:
     runs-on: ubuntu-latest
     name: Project Check
     steps:
     - name: Check PR is in project
       id: match
-      uses: js-egton/themis@v3.13
-      with:
-        project-regex: ^In flight$
-        debug-mode: true
+      uses: js-egton/themis@v3.15
+      env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        PROJECT_REGEX: ^In flight$
+        DEBUG_MODE: true
   label_match_job:
     runs-on: ubuntu-latest
     name: Label Check
     steps:
     - name: Check PR doesn't have invalid label
       id: match
-      uses: js-egton/themis@v3.9
-      with:
-        label-regex: ^breaking-change$
-        debug-mode: true
+      uses: js-egton/themis@v3.15
+      env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        LABEL_REGEX: ^breaking-change$
+        DEBUG_MODE: true

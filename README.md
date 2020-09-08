@@ -6,9 +6,9 @@ A Github Action that allows users to define a rule that prevents Pull Requests f
 
 ## v3 Usage
 
-Version 3 adds a new `changelog-regex` parameter:
+Version 3 adds a new `CHANGELOG_REGEX` parameter:
 
-* `changelog-regex` is the Regex string you want to use when searching for changelog files. It can be a filename (`CHANGELOG.md`) or a folder (`changelogs/`).
+* `CHANGELOG_REGEX` is the Regex string you want to use when searching for changelog files. It can be a filename (`CHANGELOG.md`) or a folder (`changelogs/`).
 
 ### `.github/workflows/main.yml`
 
@@ -23,24 +23,25 @@ jobs:
     - name: Check PR matches merge criteria
       id: match
       uses: js-egton/themis@v3.13
-      with:
-        project-regex: ^Regex Here$
-        label-regex: ^Regex Here$
-        changelog-regex: changelogs/
-        debug-mode: true
+      env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        PROJECT_REGEX: ^Regex Here$
+        LABEL_REGEX: ^Regex Here$
+        CHANGELOG_REGEX: changelogs/
+        DEBUG_MODE: true
 ```
 
 ## v2 Usage
 
 Version 2 adds a third `with` parameter, and renames `match-regex` as follows:
 
-* `project-regex` is the Regex string you want to use for **valid** projects. The check will fail if the PR is not in a valid project.
-* `label-regex` is the Regex string you want to use for **invalid** labels. The check will fail if the PR contains a label that matches the Regex.
+* `PROJECT_REGEX` is the Regex string you want to use for **valid** projects. The check will fail if the PR is not in a valid project.
+* `LABEL_REGEX` is the Regex string you want to use for **invalid** labels. The check will fail if the PR contains a label that matches the Regex.
 
 There is also a debugging flag, allowing you to see console output in the job:
 
-* `debug-mode`, defaults to FALSE.
+* `DEBUG_MODE`, defaults to FALSE.
 
 ### `.github/workflows/main.yml`
 
@@ -55,11 +56,12 @@ jobs:
     - name: Check PR matches merge criteria
       id: match
       uses: js-egton/themis@v2.12
-      with:
-        project-regex: ^Regex Here$
-        label-regex: ^Regex Here$
-        debug-mode: true
+      env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        PROJECT_REGEX: ^Regex Here$
+        LABEL_REGEX: ^Regex Here$
+        DEBUG_MODE: true
 ```
 
 ## Usage
@@ -84,7 +86,8 @@ jobs:
     - name: Check PR is in project
       id: match
       uses: js-egton/themis@v1.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         match-regex: ^Regex Here$
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
