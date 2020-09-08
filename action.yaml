@@ -4,16 +4,16 @@ branding:
   icon: 'moon'
   color: 'purple'
 inputs:
-  project-regex:
+  PROJECT_REGEX:
     description: 'Will only allow PRs that match the given project'
     required: false
-  label-regex:
+  LABEL_REGEX:
     description: 'Will reject PRs that match the given label'
     required: false
-  changelog-regex:
+  CHANGELOG_REGEX:
       description: 'Will reject PRs that are missing updates to the given files'
       required: false
-  debug-mode:
+  DEBUG_MODE:
       description: 'Whether to enable console output'
       required: false
       default: false
