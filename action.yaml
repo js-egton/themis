@@ -13,6 +13,10 @@ inputs:
   CHANGELOG_REGEX:
       description: 'Will reject PRs that are missing updates to the given files'
       required: false
+  ORG_LEVEL:
+      description: 'Whether to check projects at an organisational level rather than repo level'
+      required: false
+      default: false
   DEBUG_MODE:
       description: 'Whether to enable console output'
       required: false
