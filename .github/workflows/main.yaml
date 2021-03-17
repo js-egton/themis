@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Check PR doesn't have invalid label
         id: themis_breaking
-        uses: js-egton/themis@v3.15
+        uses: js-egton/themis@v3.16
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -18,54 +18,28 @@ jobs:
 
       - name: Check PR has updated CHANGELOG
         id: themis_release
-        uses: js-egton/themis@v3.15
+        uses: js-egton/themis@v3.16
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           CHANGELOG_REGEX: CHANGELOG
           DEBUG_MODE: true
 
-      # - name: Check PR is in project
-      #   id: themis_sprint
-      #   uses: js-egton/themis@v3.15
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     PROJECT_REGEX: ^In flight$
-      #     DEBUG_MODE: true
-
-      - name: Create failure message
-        if: failure()
+      - name: Check PR is in project
+        id: themis_sprint
+        uses: js-egton/themis@v3.16
         env:
-          # SPRINT_OUTCOME: ${{ steps.themis_sprint.outcome }}
-          BREAKING_OUTCOME: ${{ steps.themis_breaking.outcome }}
-          RELEASE_OUTCOME: ${{ steps.themis_release.outcome }}
-          STEPS: ${{ toJson(steps) }}
-        run: |
-          echo $BREAKING_OUTCOME
-          echo $RELEASE_OUTCOME
-          echo $STEPS
-          echo $BREAKING_OUTCOME = 'success'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          PROJECT_REGEX: ^In flight$
+          DEBUG_MODE: true
 
-          if [ ${BREAKING_OUTCOME} = 'success' ]; then
-            BREAKING_EMOJI="✅"
-          else
-            BREAKING_EMOJI="❌"
-          fi
-
-          if [ ${RELEASE_OUTCOME} = 'success' ]; then
-            RELEASE_EMOJI="✅"
-          else
-            RELEASE_EMOJI="❌"
-          fi
-
-          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          MESSAGE_OUTPUT="One or more mergeability checks failed on PR #${PR_NUMBER}:\n
-                          ${BREAKING_EMOJI} PR is not labelled as a breaking change\n
-                          ${RELEASE_EMOJI} PR has a release note update"
-
-          MESSAGE_OUTPUT="${MESSAGE_OUTPUT//'%'/'%25'}"
-          MESSAGE_OUTPUT="${MESSAGE_OUTPUT//$'\n'/'%0A'}"
-          MESSAGE_OUTPUT="${MESSAGE_OUTPUT//$'\r'/'%0D'}"
-
-          echo "${MESSAGE_OUTPUT}"
+      - name: Check PR is in org project
+        id: themis_sprint
+        uses: js-egton/themis@v3.16
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          PROJECT_REGEX: ^Green Triangle$
+          DEBUG_MODE: true
+          ORG_LEVEL: true

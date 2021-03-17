@@ -34,6 +34,22 @@ const getProjects = async function(repoInfo, projectMatchRegex) {
   }
 }
 
+const getOrgProjects = async function(repoInfo, projectMatchRegex) {
+  try {
+    const projectList = await octokit.request("GET /orgs/:org/projects", {
+      org: repoInfo.owner,
+      headers: {
+        'accept': 'application/vnd.github.inertia-preview+json'
+      }
+    });
+
+    // Filter these down by project names that match the Regex we were given
+    return projectList.data.filter(project => projectMatchRegex.test(project.name)).map(project => project.id);
+  } catch (err) {
+    console.error('Unable to get projects: ', err);
+  }
+}
+
 const getCardIdsFromProjects = async function(repoProjects) {
   try {
     let cards = []
@@ -111,7 +127,7 @@ const getFilesOnCommit = async function(repoInfo, commitSha) {
   }
 }
 
-const checkProjectRegex = async function(regex, debugMode) {
+const checkProjectRegex = async function(regex, orgLevel, debugMode) {
   try {
     const projectMatchRegex = new RegExp(regex);
 
@@ -121,7 +137,13 @@ const checkProjectRegex = async function(regex, debugMode) {
     }
 
     // Go find projects for this repo that match our Regex
-    const repoProjects = await getProjects(github.context.repo, projectMatchRegex);
+    let repoProjects;
+
+    if (orgLevel) {
+      repoProjects = await getOrgProjects(github.context.repo, projectMatchRegex);
+    } else {
+      repoProjects = await getProjects(github.context.repo, projectMatchRegex);
+    }
 
     if (debugMode) {
       console.log('List of projects matching Regex of ' + regex + ':', (repoProjects || 'none'));
@@ -246,11 +268,17 @@ async function run() {
     const labelRegex = core.getInput('LABEL_REGEX');
     const changelogRegex = core.getInput('CHANGELOG_REGEX');
     const debugMode = core.getInput('DEBUG_MODE');
+    const orgLevel = core.getInput('ORG_LEVEL');
 
     let debugModeFlag = false;
+    let orgLevelFlag = false;
 
     if (debugMode && debugMode === 'true') {
       debugModeFlag = true;
+    }
+
+    if (orgLevel && orgLevel === 'true') {
+      orgLevelFlag = true;
     }
 
     if (changelogRegex) {
@@ -258,7 +286,7 @@ async function run() {
     }
 
     if (projectRegex) {
-      checkProjectRegex(projectRegex, debugModeFlag);
+      checkProjectRegex(projectRegex, orgLevelFlag, debugModeFlag);
     }
 
     if (labelRegex) {
