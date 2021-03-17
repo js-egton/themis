@@ -6,9 +6,10 @@ A Github Action that allows users to define a rule that prevents Pull Requests f
 
 ## v3 Usage
 
-Version 3 adds a new `CHANGELOG_REGEX` parameter:
+Version 3 adds two new paramters:
 
 * `CHANGELOG_REGEX` is the Regex string you want to use when searching for changelog files. It can be a filename (`CHANGELOG.md`) or a folder (`changelogs/`).
+* `ORG_LEVEL` is used in conjunction with `PROJECT_REGEX`, and determines whether to check an organisation's projects (TRUE) or a repo's projects (FALSE, default).
 
 ### `.github/workflows/main.yml`
 
