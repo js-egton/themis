@@ -17,7 +17,7 @@ const getLabelsOnIssue = async function(repoInfo, issueNumber) {
   }
 }
 
-const getProjects = async function(repoInfo, projectMatchRegex) {
+const getProjects = async function(repoInfo, projectMatchRegex, debugMode) {
   try {
     const projectList = await octokit.request("GET /repos/:owner/:repo/projects", {
       owner: repoInfo.owner,
@@ -27,6 +27,10 @@ const getProjects = async function(repoInfo, projectMatchRegex) {
       }
     });
 
+    if (debugMode) {
+      console.log(`Result of GET /repos/${repoInfo.owner}/${repoInfo.repo}/projects:`, projectList.data);
+    }
+
     // Filter these down by project names that match the Regex we were given
     return projectList.data.filter(project => projectMatchRegex.test(project.name)).map(project => project.id);
   } catch (err) {
@@ -34,7 +38,7 @@ const getProjects = async function(repoInfo, projectMatchRegex) {
   }
 }
 
-const getOrgProjects = async function(repoInfo, projectMatchRegex) {
+const getOrgProjects = async function(repoInfo, projectMatchRegex, debugMode) {
   try {
     const projectList = await octokit.request("GET /orgs/:org/projects", {
       org: repoInfo.owner,
@@ -42,6 +46,10 @@ const getOrgProjects = async function(repoInfo, projectMatchRegex) {
         'accept': 'application/vnd.github.inertia-preview+json'
       }
     });
+
+    if (debugMode) {
+      console.log(`Result of GET /orgs/${repoInfo.owner}/projects:`, projectList.data);
+    }
 
     // Filter these down by project names that match the Regex we were given
     return projectList.data.filter(project => projectMatchRegex.test(project.name)).map(project => project.id);
@@ -140,9 +148,9 @@ const checkProjectRegex = async function(regex, orgLevel, debugMode) {
     let repoProjects;
 
     if (orgLevel) {
-      repoProjects = await getOrgProjects(github.context.repo, projectMatchRegex);
+      repoProjects = await getOrgProjects(github.context.repo, projectMatchRegex, debugMode);
     } else {
-      repoProjects = await getProjects(github.context.repo, projectMatchRegex);
+      repoProjects = await getProjects(github.context.repo, projectMatchRegex, debugMode);
     }
 
     if (debugMode) {
