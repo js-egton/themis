@@ -23,7 +23,7 @@ const getProjects = async function(repoInfo, debugMode, projectMatchRegex) {
       owner: repoInfo.owner,
       repo: repoInfo.repo,
       headers: {
-        'accept': 'application/vnd.github.inertia-preview+json'
+        'accept': 'application/vnd.github.v3+json'
       }
     });
 
@@ -43,7 +43,7 @@ const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
     const projectList = await octokit.request("GET /orgs/:org/projects", {
       org: repoInfo.owner,
       headers: {
-        'accept': 'application/vnd.github.inertia-preview+json'
+        'accept': 'application/vnd.github.v3+json'
       }
     });
 
@@ -67,7 +67,7 @@ const getCardIdsFromProjects = async function(repoProjects) {
       let res = await octokit.request("GET /projects/:project_id/columns", {
         project_id: repoProjects[i],
         headers: {
-          'accept': 'application/vnd.github.inertia-preview+json'
+          'accept': 'application/vnd.github.v3+json'
         }
       });
 
@@ -78,7 +78,7 @@ const getCardIdsFromProjects = async function(repoProjects) {
         columnId => octokit.request("GET /projects/columns/:column_id/cards", {
           column_id: columnId,
           headers: {
-            'accept': 'application/vnd.github.inertia-preview+json'
+            'accept': 'application/vnd.github.v3+json'
           }
         })
       ));
