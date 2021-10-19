@@ -9,7 +9,7 @@ jobs:
     steps:
     - name: Check PR has updated CHANGELOG
       id: match
-      uses: js-egton/themis@v3.15
+      uses: js-egton/themis@v3.16.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -21,11 +21,24 @@ jobs:
     steps:
     - name: Check PR is in project
       id: match
-      uses: js-egton/themis@v3.15
+      uses: js-egton/themis@v3.16.3
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         PROJECT_REGEX: ^In flight$
+        DEBUG_MODE: true
+  pr_org_match_job:
+    runs-on: ubuntu-latest
+    name: Project Check
+    steps:
+    - name: Check PR is in org-level project
+      id: match
+      uses: js-egton/themis@v3.16.3
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        PROJECT_REGEX: ^Green Triangle$
+        ORG_LEVEL: true
         DEBUG_MODE: true
   label_match_job:
     runs-on: ubuntu-latest
@@ -33,7 +46,7 @@ jobs:
     steps:
     - name: Check PR doesn't have invalid label
       id: match
-      uses: js-egton/themis@v3.15
+      uses: js-egton/themis@v3.16.3
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:

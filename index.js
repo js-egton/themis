@@ -17,7 +17,7 @@ const getLabelsOnIssue = async function(repoInfo, issueNumber) {
   }
 }
 
-const getProjects = async function(repoInfo, projectMatchRegex) {
+const getProjects = async function(repoInfo, debugMode, projectMatchRegex) {
   try {
     const projectList = await octokit.request("GET /repos/:owner/:repo/projects", {
       owner: repoInfo.owner,
@@ -26,6 +26,30 @@ const getProjects = async function(repoInfo, projectMatchRegex) {
         'accept': 'application/vnd.github.inertia-preview+json'
       }
     });
+
+    if (debugMode) {
+      console.log('Result of GET /repos/' + repoInfo.owner + '/' + repoInfo.repo + '/projects:', projectList.data);
+    }
+
+    // Filter these down by project names that match the Regex we were given
+    return projectList.data.filter(project => projectMatchRegex.test(project.name)).map(project => project.id);
+  } catch (err) {
+    console.error('Unable to get projects: ', err);
+  }
+}
+
+const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
+  try {
+    const projectList = await octokit.request("GET /orgs/:org/projects", {
+      org: repoInfo.owner,
+      headers: {
+        'accept': 'application/vnd.github.inertia-preview+json'
+      }
+    });
+
+    if (debugMode) {
+      console.log('Result of GET /orgs/' + repoInfo.owner + '/projects:', projectList.data);
+    }
 
     // Filter these down by project names that match the Regex we were given
     return projectList.data.filter(project => projectMatchRegex.test(project.name)).map(project => project.id);
@@ -111,7 +135,7 @@ const getFilesOnCommit = async function(repoInfo, commitSha) {
   }
 }
 
-const checkProjectRegex = async function(regex, debugMode) {
+const checkProjectRegex = async function(regex, orgLevel, debugMode) {
   try {
     const projectMatchRegex = new RegExp(regex);
 
@@ -121,7 +145,13 @@ const checkProjectRegex = async function(regex, debugMode) {
     }
 
     // Go find projects for this repo that match our Regex
-    const repoProjects = await getProjects(github.context.repo, projectMatchRegex);
+    let repoProjects;
+
+    if (orgLevel) {
+      repoProjects = await getOrgProjects(github.context.repo, debugMode, projectMatchRegex);
+    } else {
+      repoProjects = await getProjects(github.context.repo, debugMode, projectMatchRegex);
+    }
 
     if (debugMode) {
       console.log('List of projects matching Regex of ' + regex + ':', (repoProjects || 'none'));
@@ -246,11 +276,17 @@ async function run() {
     const labelRegex = core.getInput('LABEL_REGEX');
     const changelogRegex = core.getInput('CHANGELOG_REGEX');
     const debugMode = core.getInput('DEBUG_MODE');
+    const orgLevel = core.getInput('ORG_LEVEL');
 
     let debugModeFlag = false;
+    let orgLevelFlag = false;
 
     if (debugMode && debugMode === 'true') {
       debugModeFlag = true;
+    }
+
+    if (orgLevel && orgLevel === 'true') {
+      orgLevelFlag = true;
     }
 
     if (changelogRegex) {
@@ -258,7 +294,7 @@ async function run() {
     }
 
     if (projectRegex) {
-      checkProjectRegex(projectRegex, debugModeFlag);
+      checkProjectRegex(projectRegex, orgLevelFlag, debugModeFlag);
     }
 
     if (labelRegex) {
