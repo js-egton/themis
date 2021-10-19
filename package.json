@@ -1,6 +1,6 @@
 {
   "name": "themis",
-  "version": "3.16.3",
+  "version": "3.16.5",
   "description": "A Github Action that lets you decide whether a PR should be mergeable or not.",
   "main": "index.js",
   "scripts": {
@@ -14,8 +14,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@actions/core": "^1.2.3",
+    "@actions/core": "^1.2.6",
     "@actions/github": "^2.1.1",
-    "@octokit/action": "^2.0.0"
+    "@octokit/action": "^3.18.0"
   }
 }
