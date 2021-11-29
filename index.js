@@ -1,11 +1,18 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const { request } = require("@octokit/request");
+const { graphql } = require("@octokit/graphql");
 
 const requestWithAuth = request.defaults({
   headers: {
     accept: "application/vnd.github.v3+json",
-    authorization: `token ${process.env.GITHUB_TOKEN}`
+    authorization: `token ${process.env.GITHUB_TOKEN}`,
+  },
+});
+
+const graphqlWithAuth = graphql.defaults({
+  headers: {
+    authorization: `token ${process.env.GITHUB_TOKEN}`,
   },
 });
 
@@ -47,12 +54,25 @@ const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
       org: repoInfo.owner
     });
 
+    const { projectList } = await graphqlWithAuth(`
+      {
+        organization(login: "${repoInfo.owner}") {
+          projectsNext(first: 20) {
+            nodes {
+              id
+              title
+            }
+          }
+        }
+      }
+    `);
+
     if (debugMode) {
       console.log('Result of GET /orgs/' + repoInfo.owner + '/projects:', projectList.data);
     }
 
     // Filter these down by project names that match the Regex we were given
-    return projectList.data.filter(project => projectMatchRegex.test(project.name)).map(project => project.id);
+    return projectList.data.filter(project => projectMatchRegex.test(project.title)).map(project => project.id);
   } catch (err) {
     console.error('Unable to get projects: ', err);
   }
@@ -68,8 +88,21 @@ const getCardIdsFromProjects = async function(repoProjects) {
         project_id: repoProjects[i]
       });
 
+      const { cardsInProject } = await graphqlWithAuth(`
+        node(id: "${repoProjects[i]}") {
+          ... on ProjectNext {
+            items(first: 50) {
+              nodes{
+                title
+                id
+              }
+            }
+          }
+        }
+      `);
+
       // Got all the columns for this project, now we need cards
-      const columnIds = res.data.map(project => project.id)
+      const columnIds = cardsInProject.map(project => project.id)
 
       res = await Promise.all(columnIds.map(
         columnId => requestWithAuth("GET /projects/columns/{column_id}/cards", {
@@ -78,40 +111,38 @@ const getCardIdsFromProjects = async function(repoProjects) {
       ));
 
       // We have all the cards from all the columns, put them together
-      res.forEach(card => {
-        cards = cards.concat(card.data)
-      })
+      cards = cards.concat(columnIds);
     }
 
-    return cards.map(card => card.content_url)
+    return cards;
   } catch (err) {
     console.error('Unable to get card IDs from project: ', err);
   }
 }
 
-const getIssuesFromCards = async function(payload, projectCards) {
-  try {
-    let issues = [];
+// const getIssuesFromCards = async function(payload, projectCards) {
+//   try {
+//     let issues = [];
 
-    let issueUrl = payload.repository.issues_url;
-    issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length);
+//     let issueUrl = payload.repository.issues_url;
+//     issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length);
 
-    for (let card of projectCards) {
-      if (card) {
-        const match = card.indexOf(issueUrl)
+//     for (let card of projectCards) {
+//       if (card) {
+//         const match = card.indexOf(issueUrl)
 
-        if (match !== -1) {
-          // Need to turn this into an integer because the PR payload uses int
-          issues.push(parseInt(card.substring(match + issueUrl.length + 1)))
-        }
-      }
-    }
+//         if (match !== -1) {
+//           // Need to turn this into an integer because the PR payload uses int
+//           issues.push(parseInt(card.substring(match + issueUrl.length + 1)))
+//         }
+//       }
+//     }
 
-    return issues;
-  } catch (err) {
-    console.error('Unable to get issues from cards: ', err);
-  }
-}
+//     return issues;
+//   } catch (err) {
+//     console.error('Unable to get issues from cards: ', err);
+//   }
+// }
 
 const getFilesOnCommit = async function(repoInfo, commitSha) {
   try {
@@ -160,7 +191,7 @@ const checkProjectRegex = async function(regex, orgLevel, debugMode) {
     const projectCards = await getCardIdsFromProjects(repoProjects);
 
     if (debugMode) {
-      console.log('List of card URLs found in ' + repoProjects.length + ' valid project(s):', (projectCards || 'none'));
+      console.log('List of card IDs found in ' + repoProjects.length + ' valid project(s):', (projectCards || 'none'));
     }
 
     if (projectCards.length < 1) {
@@ -168,23 +199,23 @@ const checkProjectRegex = async function(regex, orgLevel, debugMode) {
       return;
     }
 
-    // Pull the issue IDs out of the cards
-    const cardIssues = await getIssuesFromCards(github.context.payload, projectCards);
+    // // Pull the issue IDs out of the cards
+    // const cardIssues = await getIssuesFromCards(github.context.payload, projectCards);
 
-    if (debugMode) {
-      console.log('List of issue numbers extracted from ' + cardIssues.length + ' valid project card(s):', (cardIssues || 'none'));
-    }
+    // if (debugMode) {
+    //   console.log('List of issue numbers extracted from ' + cardIssues.length + ' valid project card(s):', (cardIssues || 'none'));
+    // }
 
-    if (cardIssues.length < 1) {
-      core.setFailed('No issues found in Project Cards: ' + (projectCards || null));
-      return;
-    }
+    // if (cardIssues.length < 1) {
+    //   core.setFailed('No issues found in Project Cards: ' + (projectCards || null));
+    //   return;
+    // }
 
     // Get the current PR number from the payload
     const thisIssueNumber = github.context.payload.number;
 
     // If the PR issue is included in the big list of card IDs, we're good
-    if (! cardIssues.includes(thisIssueNumber)) {
+    if (! projectCards.includes(thisIssueNumber)) {
       core.setFailed('PR must be in a valid sprint project.')
     }
   } catch (err) {
