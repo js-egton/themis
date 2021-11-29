@@ -50,10 +50,6 @@ const getProjects = async function(repoInfo, debugMode, projectMatchRegex) {
 
 const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
   try {
-    // const projectList = await requestWithAuth("GET /orgs/{org}/projects", {
-    //   org: repoInfo.owner
-    // });
-
     try {
       const projectListQuery = await graphqlWithAuth(`
         query projectListQuery($owner: String!) {
@@ -97,10 +93,6 @@ const getCardIdsFromProjects = async function(repoProjects) {
 
     // Get all the project columns
     for (let i = 0; i < repoProjects.length; i++) {
-      // let res = await requestWithAuth("GET /projects/{project_id}/columns", {
-      //   project_id: repoProjects[i]
-      // });
-
       try {
         const cardsInProjectQuery = await graphqlWithAuth(`
           query cardsInProjectQuery($project: ID!) {
@@ -133,12 +125,6 @@ const getCardIdsFromProjects = async function(repoProjects) {
         // Got all the columns for this project, now we need cards
         const columnIds = cardsInProject.map(project => project.content.number)
 
-        // res = await Promise.all(columnIds.map(
-        //   columnId => requestWithAuth("GET /projects/columns/{column_id}/cards", {
-        //     column_id: columnId
-        //   })
-        // ));
-
         // We have all the cards from all the columns, put them together
         cards = cards.concat(columnIds);
       } catch (error) {
@@ -155,30 +141,6 @@ const getCardIdsFromProjects = async function(repoProjects) {
     console.error('Unable to get card IDs from project: ', err);
   }
 }
-
-// const getIssuesFromCards = async function(payload, projectCards) {
-//   try {
-//     let issues = [];
-
-//     let issueUrl = payload.repository.issues_url;
-//     issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length);
-
-//     for (let card of projectCards) {
-//       if (card) {
-//         const match = card.indexOf(issueUrl)
-
-//         if (match !== -1) {
-//           // Need to turn this into an integer because the PR payload uses int
-//           issues.push(parseInt(card.substring(match + issueUrl.length + 1)))
-//         }
-//       }
-//     }
-
-//     return issues;
-//   } catch (err) {
-//     console.error('Unable to get issues from cards: ', err);
-//   }
-// }
 
 const getFilesOnCommit = async function(repoInfo, commitSha) {
   try {
@@ -234,18 +196,6 @@ const checkProjectRegex = async function(regex, orgLevel, debugMode) {
       core.setFailed('No cards found for matching Projects: ' + (repoProjects || null));
       return;
     }
-
-    // // Pull the issue IDs out of the cards
-    // const cardIssues = await getIssuesFromCards(github.context.payload, projectCards);
-
-    // if (debugMode) {
-    //   console.log('List of issue numbers extracted from ' + cardIssues.length + ' valid project card(s):', (cardIssues || 'none'));
-    // }
-
-    // if (cardIssues.length < 1) {
-    //   core.setFailed('No issues found in Project Cards: ' + (projectCards || null));
-    //   return;
-    // }
 
     // Get the current PR number from the payload
     const thisIssueNumber = github.context.payload.number;
