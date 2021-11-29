@@ -1,11 +1,10 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const { Octokit } = require("@octokit/action");
-const octokit = new Octokit();
+const { request } = require("@octokit/request");
 
 const getLabelsOnIssue = async function(repoInfo, issueNumber) {
   try {
-    const labelsList = await octokit.request("GET /repos/:owner/:repo/issues/:issue_number/labels", {
+    const labelsList = await request("GET /repos/{owner}/{repo}/issues/{issue_number}/labels", {
       owner: repoInfo.owner,
       repo: repoInfo.repo,
       issue_number: issueNumber
@@ -19,7 +18,7 @@ const getLabelsOnIssue = async function(repoInfo, issueNumber) {
 
 const getProjects = async function(repoInfo, debugMode, projectMatchRegex) {
   try {
-    const projectList = await octokit.request("GET /repos/:owner/:repo/projects", {
+    const projectList = await request("GET /repos/{owner}/{repo}/projects", {
       owner: repoInfo.owner,
       repo: repoInfo.repo,
       headers: {
@@ -40,7 +39,7 @@ const getProjects = async function(repoInfo, debugMode, projectMatchRegex) {
 
 const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
   try {
-    const projectList = await octokit.request("GET /orgs/:org/projects", {
+    const projectList = await request("GET /orgs/{org}/repos", {
       org: repoInfo.owner,
       headers: {
         'accept': 'application/vnd.github.v3+json'
@@ -64,7 +63,7 @@ const getCardIdsFromProjects = async function(repoProjects) {
 
     // Get all the project columns
     for (let i = 0; i < repoProjects.length; i++) {
-      let res = await octokit.request("GET /projects/:project_id/columns", {
+      let res = await request("GET /projects/{project_id}/columns", {
         project_id: repoProjects[i],
         headers: {
           'accept': 'application/vnd.github.v3+json'
@@ -75,7 +74,7 @@ const getCardIdsFromProjects = async function(repoProjects) {
       const columnIds = res.data.map(project => project.id)
 
       res = await Promise.all(columnIds.map(
-        columnId => octokit.request("GET /projects/columns/:column_id/cards", {
+        columnId => request("GET /projects/columns/{column_id}/cards", {
           column_id: columnId,
           headers: {
             'accept': 'application/vnd.github.v3+json'
@@ -121,7 +120,7 @@ const getIssuesFromCards = async function(payload, projectCards) {
 
 const getFilesOnCommit = async function(repoInfo, commitSha) {
   try {
-    const commitDetails = await octokit.request("GET /repos/:owner/:repo/commits/:ref", {
+    const commitDetails = await request("GET /repos/{owner}/{repo}/commits/{ref}", {
       owner: repoInfo.owner,
       repo: repoInfo.repo,
       ref: commitSha
