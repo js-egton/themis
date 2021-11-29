@@ -85,6 +85,8 @@ const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
     } catch (error) {
       if (error instanceof GraphqlResponseError) {
         console.log(error.message);
+      } else {
+        console.log(error);
       }
     }
   } catch (err) {
@@ -148,6 +150,8 @@ const getCardIdsFromProjects = async function(repoProjects) {
       } catch (error) {
         if (error instanceof GraphqlResponseError) {
           console.log(error.message);
+        } else {
+          console.log(error);
         }
       }
     }
@@ -220,7 +224,7 @@ const checkProjectRegex = async function(regex, orgLevel, debugMode) {
       console.log('List of projects matching Regex of ' + regex + ':', (repoProjects || 'none'));
     }
 
-    if (repoProjects.length < 1) {
+    if ((! repoProjects) || (repoProjects.length < 1)) {
       core.setFailed('No projects found that matched given Regex: ' + projectMatchRegex);
       return;
     }
