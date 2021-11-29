@@ -54,33 +54,39 @@ const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
     //   org: repoInfo.owner
     // });
 
-    const { projectListQuery } = await graphqlWithAuth(`
-      query projectListQuery($owner: String!) {
-        organization(login: $owner) {
-          projectsNext(first: 20) {
-            nodes {
-              id
-              title
+    try {
+      const { projectListQuery } = await graphqlWithAuth(`
+        query projectListQuery($owner: String!) {
+          organization(login: $owner) {
+            projectsNext(first: 20) {
+              nodes {
+                id
+                title
+              }
             }
           }
         }
+      `,
+      {
+        owner: repoInfo.owner,
+      });
+
+      console.log(projectListQuery);
+      console.log(projectListQuery[0]);
+
+      const projectList = projectListQuery.data.organization.projectsNext.nodes;
+
+      if (debugMode) {
+        console.log(`Result of GQL request organization(login: "${repoInfo.owner}"): `, projectList);
       }
-    `,
-    {
-      owner: repoInfo.owner,
-    });
 
-    console.log(projectListQuery);
-    console.log(projectListQuery[0]);
-
-    const projectList = projectListQuery.data.organization.projectsNext.nodes;
-
-    if (debugMode) {
-      console.log(`Result of GQL request organization(login: "${repoInfo.owner}"): `, projectList);
+      // Filter these down by project names that match the Regex we were given
+      return projectList.filter(project => projectMatchRegex.test(project.title)).map(project => project.id);
+    } catch (error) {
+      if (error instanceof GraphqlResponseError) {
+        console.log(error.message);
+      }
     }
-
-    // Filter these down by project names that match the Regex we were given
-    return projectList.filter(project => projectMatchRegex.test(project.title)).map(project => project.id);
   } catch (err) {
     console.error('Unable to get projects: ', err);
   }
@@ -96,48 +102,54 @@ const getCardIdsFromProjects = async function(repoProjects) {
       //   project_id: repoProjects[i]
       // });
 
-      const { cardsInProjectQuery } = await graphqlWithAuth(`
-        query cardsInProjectQuery($project: String!) {
-          node(id: $project) {
-            ... on ProjectNext {
-              items(first: 50) {
-                nodes{
-                  title
-                  id
-                  content{
-                    ... on Issue {
-                      number
-                    }
-                    ... on PullRequest {
-                      number
+      try {
+        const { cardsInProjectQuery } = await graphqlWithAuth(`
+          query cardsInProjectQuery($project: String!) {
+            node(id: $project) {
+              ... on ProjectNext {
+                items(first: 50) {
+                  nodes{
+                    title
+                    id
+                    content{
+                      ... on Issue {
+                        number
+                      }
+                      ... on PullRequest {
+                        number
+                      }
                     }
                   }
                 }
               }
             }
           }
+        `,
+        {
+          project: repoProjects[i],
+        });
+
+        console.log(cardsInProjectQuery);
+        console.log(cardsInProjectQuery[0]);
+
+        const cardsInProject = cardsInProjectQuery.data.node.items.nodes;
+
+        // Got all the columns for this project, now we need cards
+        const columnIds = cardsInProject.map(project => project.content.number)
+
+        // res = await Promise.all(columnIds.map(
+        //   columnId => requestWithAuth("GET /projects/columns/{column_id}/cards", {
+        //     column_id: columnId
+        //   })
+        // ));
+
+        // We have all the cards from all the columns, put them together
+        cards = cards.concat(columnIds);
+      } catch (error) {
+        if (error instanceof GraphqlResponseError) {
+          console.log(error.message);
         }
-      `,
-      {
-        project: repoProjects[i],
-      });
-
-      console.log(cardsInProjectQuery);
-      console.log(cardsInProjectQuery[0]);
-
-      const cardsInProject = cardsInProjectQuery.data.node.items.nodes;
-
-      // Got all the columns for this project, now we need cards
-      const columnIds = cardsInProject.map(project => project.content.number)
-
-      // res = await Promise.all(columnIds.map(
-      //   columnId => requestWithAuth("GET /projects/columns/{column_id}/cards", {
-      //     column_id: columnId
-      //   })
-      // ));
-
-      // We have all the cards from all the columns, put them together
-      cards = cards.concat(columnIds);
+      }
     }
 
     return cards;
