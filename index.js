@@ -27,10 +27,7 @@ const getProjects = async function(repoInfo, debugMode, projectMatchRegex) {
   try {
     const projectList = await requestWithAuth("GET /repos/{owner}/{repo}/projects", {
       owner: repoInfo.owner,
-      repo: repoInfo.repo,
-      headers: {
-        'accept': 'application/vnd.github.v3+json'
-      }
+      repo: repoInfo.repo
     });
 
     if (debugMode) {
@@ -46,11 +43,8 @@ const getProjects = async function(repoInfo, debugMode, projectMatchRegex) {
 
 const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
   try {
-    const projectList = await requestWithAuth("GET /orgs/{org}/repos", {
-      org: repoInfo.owner,
-      headers: {
-        'accept': 'application/vnd.github.v3+json'
-      }
+    const projectList = await requestWithAuth("GET /orgs/{org}/projects", {
+      org: repoInfo.owner
     });
 
     if (debugMode) {
@@ -71,10 +65,7 @@ const getCardIdsFromProjects = async function(repoProjects) {
     // Get all the project columns
     for (let i = 0; i < repoProjects.length; i++) {
       let res = await requestWithAuth("GET /projects/{project_id}/columns", {
-        project_id: repoProjects[i],
-        headers: {
-          'accept': 'application/vnd.github.v3+json'
-        }
+        project_id: repoProjects[i]
       });
 
       // Got all the columns for this project, now we need cards
@@ -82,10 +73,7 @@ const getCardIdsFromProjects = async function(repoProjects) {
 
       res = await Promise.all(columnIds.map(
         columnId => requestWithAuth("GET /projects/columns/{column_id}/cards", {
-          column_id: columnId,
-          headers: {
-            'accept': 'application/vnd.github.v3+json'
-          }
+          column_id: columnId
         })
       ));
 
