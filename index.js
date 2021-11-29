@@ -73,7 +73,7 @@ const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
 
       console.log(projectListQuery);
 
-      const projectList = projectListQuery.data.organization.projectsNext.nodes;
+      const projectList = projectListQuery.organization.projectsNext.nodes;
 
       if (debugMode) {
         console.log(`Result of GQL request organization(login: "${repoInfo.owner}"): `, projectList);
@@ -132,7 +132,7 @@ const getCardIdsFromProjects = async function(repoProjects) {
 
         console.log(cardsInProjectQuery);
 
-        const cardsInProject = cardsInProjectQuery.data.node.items.nodes;
+        const cardsInProject = cardsInProjectQuery.node.items.nodes;
 
         // Got all the columns for this project, now we need cards
         const columnIds = cardsInProject.map(project => project.content.number)
