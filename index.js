@@ -1,11 +1,24 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const { Octokit } = require("@octokit/action");
-const octokit = new Octokit();
+const { request } = require("@octokit/request");
+const { graphql, GraphqlResponseError } = require("@octokit/graphql");
+
+const requestWithAuth = request.defaults({
+  headers: {
+    accept: "application/vnd.github.v3+json",
+    authorization: `token ${process.env.GITHUB_TOKEN}`,
+  },
+});
+
+const graphqlWithAuth = graphql.defaults({
+  headers: {
+    authorization: `token ${process.env.GITHUB_TOKEN}`,
+  },
+});
 
 const getLabelsOnIssue = async function(repoInfo, issueNumber) {
   try {
-    const labelsList = await octokit.request("GET /repos/:owner/:repo/issues/:issue_number/labels", {
+    const labelsList = await requestWithAuth("GET /repos/{owner}/{repo}/issues/{issue_number}/labels", {
       owner: repoInfo.owner,
       repo: repoInfo.repo,
       issue_number: issueNumber
@@ -19,12 +32,9 @@ const getLabelsOnIssue = async function(repoInfo, issueNumber) {
 
 const getProjects = async function(repoInfo, debugMode, projectMatchRegex) {
   try {
-    const projectList = await octokit.request("GET /repos/:owner/:repo/projects", {
+    const projectList = await requestWithAuth("GET /repos/{owner}/{repo}/projects", {
       owner: repoInfo.owner,
-      repo: repoInfo.repo,
-      headers: {
-        'accept': 'application/vnd.github.inertia-preview+json'
-      }
+      repo: repoInfo.repo
     });
 
     if (debugMode) {
@@ -40,19 +50,38 @@ const getProjects = async function(repoInfo, debugMode, projectMatchRegex) {
 
 const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
   try {
-    const projectList = await octokit.request("GET /orgs/:org/projects", {
-      org: repoInfo.owner,
-      headers: {
-        'accept': 'application/vnd.github.inertia-preview+json'
+    try {
+      const projectListQuery = await graphqlWithAuth(`
+        query projectListQuery($owner: String!) {
+          organization(login: $owner) {
+            projectsNext(first: 20) {
+              nodes {
+                id
+                title
+              }
+            }
+          }
+        }
+      `,
+      {
+        owner: repoInfo.owner,
+      });
+
+      const projectList = projectListQuery.organization.projectsNext.nodes;
+
+      if (debugMode) {
+        console.log(`Result of GQL request organization(login: "${repoInfo.owner}"): `, projectList);
       }
-    });
 
-    if (debugMode) {
-      console.log('Result of GET /orgs/' + repoInfo.owner + '/projects:', projectList.data);
+      // Filter these down by project names that match the Regex we were given
+      return projectList.filter(project => projectMatchRegex.test(project.title)).map(project => project.id);
+    } catch (error) {
+      if (error instanceof GraphqlResponseError) {
+        console.log(error.message);
+      } else {
+        console.log(error);
+      }
     }
-
-    // Filter these down by project names that match the Regex we were given
-    return projectList.data.filter(project => projectMatchRegex.test(project.name)).map(project => project.id);
   } catch (err) {
     console.error('Unable to get projects: ', err);
   }
@@ -64,64 +93,58 @@ const getCardIdsFromProjects = async function(repoProjects) {
 
     // Get all the project columns
     for (let i = 0; i < repoProjects.length; i++) {
-      let res = await octokit.request("GET /projects/:project_id/columns", {
-        project_id: repoProjects[i],
-        headers: {
-          'accept': 'application/vnd.github.inertia-preview+json'
-        }
-      });
-
-      // Got all the columns for this project, now we need cards
-      const columnIds = res.data.map(project => project.id)
-
-      res = await Promise.all(columnIds.map(
-        columnId => octokit.request("GET /projects/columns/:column_id/cards", {
-          column_id: columnId,
-          headers: {
-            'accept': 'application/vnd.github.inertia-preview+json'
+      try {
+        const cardsInProjectQuery = await graphqlWithAuth(`
+          query cardsInProjectQuery($project: ID!) {
+            node(id: $project) {
+              ... on ProjectNext {
+                items(first: 50) {
+                  nodes{
+                    title
+                    id
+                    content{
+                      ... on Issue {
+                        number
+                      }
+                      ... on PullRequest {
+                        number
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
-        })
-      ));
+        `,
+        {
+          project: repoProjects[i],
+        });
 
-      // We have all the cards from all the columns, put them together
-      res.forEach(card => {
-        cards = cards.concat(card.data)
-      })
+        const cardsInProject = cardsInProjectQuery.node.items.nodes;
+
+        // Got all the columns for this project, now we need cards
+        const columnIds = cardsInProject.map(project => project.content.number)
+
+        // We have all the cards from all the columns, put them together
+        cards = cards.concat(columnIds);
+      } catch (error) {
+        if (error instanceof GraphqlResponseError) {
+          console.log(error.message);
+        } else {
+          console.log(error);
+        }
+      }
     }
 
-    return cards.map(card => card.content_url)
+    return cards;
   } catch (err) {
     console.error('Unable to get card IDs from project: ', err);
   }
 }
 
-const getIssuesFromCards = async function(payload, projectCards) {
-  try {
-    let issues = [];
-
-    let issueUrl = payload.repository.issues_url;
-    issueUrl = issueUrl.substring(0, issueUrl.length - ('{/number}').length);
-
-    for (let card of projectCards) {
-      if (card) {
-        const match = card.indexOf(issueUrl)
-
-        if (match !== -1) {
-          // Need to turn this into an integer because the PR payload uses int
-          issues.push(parseInt(card.substring(match + issueUrl.length + 1)))
-        }
-      }
-    }
-
-    return issues;
-  } catch (err) {
-    console.error('Unable to get issues from cards: ', err);
-  }
-}
-
 const getFilesOnCommit = async function(repoInfo, commitSha) {
   try {
-    const commitDetails = await octokit.request("GET /repos/:owner/:repo/commits/:ref", {
+    const commitDetails = await requestWithAuth("GET /repos/{owner}/{repo}/commits/{ref}", {
       owner: repoInfo.owner,
       repo: repoInfo.repo,
       ref: commitSha
@@ -157,7 +180,7 @@ const checkProjectRegex = async function(regex, orgLevel, debugMode) {
       console.log('List of projects matching Regex of ' + regex + ':', (repoProjects || 'none'));
     }
 
-    if (repoProjects.length < 1) {
+    if ((! repoProjects) || (repoProjects.length < 1)) {
       core.setFailed('No projects found that matched given Regex: ' + projectMatchRegex);
       return;
     }
@@ -166,7 +189,7 @@ const checkProjectRegex = async function(regex, orgLevel, debugMode) {
     const projectCards = await getCardIdsFromProjects(repoProjects);
 
     if (debugMode) {
-      console.log('List of card URLs found in ' + repoProjects.length + ' valid project(s):', (projectCards || 'none'));
+      console.log('List of card IDs found in ' + repoProjects.length + ' valid project(s):', (projectCards || 'none'));
     }
 
     if (projectCards.length < 1) {
@@ -174,23 +197,11 @@ const checkProjectRegex = async function(regex, orgLevel, debugMode) {
       return;
     }
 
-    // Pull the issue IDs out of the cards
-    const cardIssues = await getIssuesFromCards(github.context.payload, projectCards);
-
-    if (debugMode) {
-      console.log('List of issue numbers extracted from ' + cardIssues.length + ' valid project card(s):', (cardIssues || 'none'));
-    }
-
-    if (cardIssues.length < 1) {
-      core.setFailed('No issues found in Project Cards: ' + (projectCards || null));
-      return;
-    }
-
     // Get the current PR number from the payload
     const thisIssueNumber = github.context.payload.number;
 
     // If the PR issue is included in the big list of card IDs, we're good
-    if (! cardIssues.includes(thisIssueNumber)) {
+    if (! projectCards.includes(thisIssueNumber)) {
       core.setFailed('PR must be in a valid sprint project.')
     }
   } catch (err) {
