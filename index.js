@@ -71,6 +71,8 @@ const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
         owner: repoInfo.owner,
       });
 
+      console.log(projectListQuery);
+
       const projectList = projectListQuery.data.organization.projectsNext.nodes;
 
       if (debugMode) {
