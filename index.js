@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const { request } = require("@octokit/request");
-const { graphql } = require("@octokit/graphql");
+const { graphql, GraphqlResponseError } = require("@octokit/graphql");
 
 const requestWithAuth = request.defaults({
   headers: {
