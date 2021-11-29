@@ -70,6 +70,9 @@ const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
       owner: repoInfo.owner,
     });
 
+    console.log(projectListQuery);
+    console.log(projectListQuery[0]);
+
     const projectList = projectListQuery.data.organization.projectsNext.nodes;
 
     if (debugMode) {
@@ -118,6 +121,9 @@ const getCardIdsFromProjects = async function(repoProjects) {
       {
         project: repoProjects[i],
       });
+
+      console.log(cardsInProjectQuery);
+      console.log(cardsInProjectQuery[0]);
 
       const cardsInProject = cardsInProjectQuery.data.node.items.nodes;
 
