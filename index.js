@@ -55,7 +55,7 @@ const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
     // });
 
     try {
-      const { projectListQuery } = await graphqlWithAuth(`
+      const projectListQuery = await graphqlWithAuth(`
         query projectListQuery($owner: String!) {
           organization(login: $owner) {
             projectsNext(first: 20) {
@@ -70,9 +70,6 @@ const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
       {
         owner: repoInfo.owner,
       });
-
-      console.log(projectListQuery);
-      console.log(projectListQuery[0]);
 
       const projectList = projectListQuery.data.organization.projectsNext.nodes;
 
@@ -105,7 +102,7 @@ const getCardIdsFromProjects = async function(repoProjects) {
       // });
 
       try {
-        const { cardsInProjectQuery } = await graphqlWithAuth(`
+        const cardsInProjectQuery = await graphqlWithAuth(`
           query cardsInProjectQuery($project: String!) {
             node(id: $project) {
               ... on ProjectNext {
@@ -132,7 +129,6 @@ const getCardIdsFromProjects = async function(repoProjects) {
         });
 
         console.log(cardsInProjectQuery);
-        console.log(cardsInProjectQuery[0]);
 
         const cardsInProject = cardsInProjectQuery.data.node.items.nodes;
 
