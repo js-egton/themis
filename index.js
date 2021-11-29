@@ -2,9 +2,16 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const { request } = require("@octokit/request");
 
+const requestWithAuth = request.defaults({
+  headers: {
+    accept: "application/vnd.github.v3+json",
+    authorization: `token ${process.env.GITHUB_TOKEN}`
+  },
+});
+
 const getLabelsOnIssue = async function(repoInfo, issueNumber) {
   try {
-    const labelsList = await request("GET /repos/{owner}/{repo}/issues/{issue_number}/labels", {
+    const labelsList = await requestWithAuth("GET /repos/{owner}/{repo}/issues/{issue_number}/labels", {
       owner: repoInfo.owner,
       repo: repoInfo.repo,
       issue_number: issueNumber
@@ -18,7 +25,7 @@ const getLabelsOnIssue = async function(repoInfo, issueNumber) {
 
 const getProjects = async function(repoInfo, debugMode, projectMatchRegex) {
   try {
-    const projectList = await request("GET /repos/{owner}/{repo}/projects", {
+    const projectList = await requestWithAuth("GET /repos/{owner}/{repo}/projects", {
       owner: repoInfo.owner,
       repo: repoInfo.repo,
       headers: {
@@ -39,7 +46,7 @@ const getProjects = async function(repoInfo, debugMode, projectMatchRegex) {
 
 const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
   try {
-    const projectList = await request("GET /orgs/{org}/repos", {
+    const projectList = await requestWithAuth("GET /orgs/{org}/repos", {
       org: repoInfo.owner,
       headers: {
         'accept': 'application/vnd.github.v3+json'
@@ -63,7 +70,7 @@ const getCardIdsFromProjects = async function(repoProjects) {
 
     // Get all the project columns
     for (let i = 0; i < repoProjects.length; i++) {
-      let res = await request("GET /projects/{project_id}/columns", {
+      let res = await requestWithAuth("GET /projects/{project_id}/columns", {
         project_id: repoProjects[i],
         headers: {
           'accept': 'application/vnd.github.v3+json'
@@ -74,7 +81,7 @@ const getCardIdsFromProjects = async function(repoProjects) {
       const columnIds = res.data.map(project => project.id)
 
       res = await Promise.all(columnIds.map(
-        columnId => request("GET /projects/columns/{column_id}/cards", {
+        columnId => requestWithAuth("GET /projects/columns/{column_id}/cards", {
           column_id: columnId,
           headers: {
             'accept': 'application/vnd.github.v3+json'
@@ -120,7 +127,7 @@ const getIssuesFromCards = async function(payload, projectCards) {
 
 const getFilesOnCommit = async function(repoInfo, commitSha) {
   try {
-    const commitDetails = await request("GET /repos/{owner}/{repo}/commits/{ref}", {
+    const commitDetails = await requestWithAuth("GET /repos/{owner}/{repo}/commits/{ref}", {
       owner: repoInfo.owner,
       repo: repoInfo.repo,
       ref: commitSha
