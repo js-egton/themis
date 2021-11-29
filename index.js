@@ -50,9 +50,9 @@ const getProjects = async function(repoInfo, debugMode, projectMatchRegex) {
 
 const getOrgProjects = async function(repoInfo, debugMode, projectMatchRegex) {
   try {
-    const projectList = await requestWithAuth("GET /orgs/{org}/projects", {
-      org: repoInfo.owner
-    });
+    // const projectList = await requestWithAuth("GET /orgs/{org}/projects", {
+    //   org: repoInfo.owner
+    // });
 
     const { projectList } = await graphqlWithAuth(`
       {
@@ -84,9 +84,9 @@ const getCardIdsFromProjects = async function(repoProjects) {
 
     // Get all the project columns
     for (let i = 0; i < repoProjects.length; i++) {
-      let res = await requestWithAuth("GET /projects/{project_id}/columns", {
-        project_id: repoProjects[i]
-      });
+      // let res = await requestWithAuth("GET /projects/{project_id}/columns", {
+      //   project_id: repoProjects[i]
+      // });
 
       const { cardsInProject } = await graphqlWithAuth(`
         node(id: "${repoProjects[i]}") {
@@ -104,11 +104,11 @@ const getCardIdsFromProjects = async function(repoProjects) {
       // Got all the columns for this project, now we need cards
       const columnIds = cardsInProject.map(project => project.id)
 
-      res = await Promise.all(columnIds.map(
-        columnId => requestWithAuth("GET /projects/columns/{column_id}/cards", {
-          column_id: columnId
-        })
-      ));
+      // res = await Promise.all(columnIds.map(
+      //   columnId => requestWithAuth("GET /projects/columns/{column_id}/cards", {
+      //     column_id: columnId
+      //   })
+      // ));
 
       // We have all the cards from all the columns, put them together
       cards = cards.concat(columnIds);
